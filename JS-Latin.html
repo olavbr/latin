@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+	html, body {
+	font : 14px verdana;
+	height: 100%;
+	}
+  #bunn {
+  	width: 100%;
+    position : absolute;
+    bottom: 0;
+    height : 40px;
+    margin-top : 0px;
+    border-top: 2px solid #880000;
+    padding-top: 8px;
+  }
+  #overskrift {
+  	font: 14px;
+  }
+  div.helesiden {
+  	max-width : 600px;
+  	margin: auto;
+  	margin-top: 0px;
+  	min-height: 100%;
+  	position: relative;
+  }
+  #innhold {
+  	width :100%;
+  	padding-bottom:40px;
+  }
+  div.topp {
+  	background-color : #880000;
+  	color: #FFFFFF;
+  }
+  div.navigasjon {
+  	text-align: center;
+  }
+  h1 {
+    font: 30px arial;
+    text-align: center;
+    line-height: 50%;
+  }
+  a.knapp:link, a.knapp:visited {
+    display: inline-block;
+    border: 2px solid white;
+    color: white;
+    padding: 7px 15px;
+    text-align: center;	
+    text-decoration: none;
+    font: 16px arial;
+	}
+	span.sporsmal {
+	}
+	span.riktig {
+		font: 14px arial;
+		color: green;
+	}
+	span.feil {
+		font: 14px arial;
+		color: red;
+	}
+	span.hoyre {
+		float: right;
+	}
+	span.glose {
+		font: 30px;
+	}
+	button.alternativ {
+  		font: 20px;
+  	}
+	a.knapp:hover {
+    	background-color: #ffffff;
+    	color: #880000;
+	}
+	
+	a.knapp:active {
+    	background-color: lightgreen;
+	}
+	div.halv {
+		width: 45%;
+		float: left;
+		padding-right: 2%;
+	}
+	div.resten {
+		float: left;
+		width: 45%;
+		padding-left: 2%;
+		border-left: 1px solid black;
+	}
+	#treningFlashcard {
+		width: 400px;
+		height: 200px;
+		margin: auto;
+		border: 2px solid black;
+		text-align: center;
+		line-height: 200px;
+		
+	}
+	#treningGlose {
+		font: 28px;
+		display: inline-block;
+		vertical-align: middle;
+		line-height: 25px;
+	}
+	#treningVenstre {
+		float: left;
+	}
+	#treningMidt {
+		display: block;
+		margin: auto;
+	}
+	#treningHoyre {
+		float: right;
+	}
+	#treningUnder {
+		display: block;
+		margin: auto;
+	}
+	#treningKnapper {
+		width: 200px;
+		margin: auto;
+	}
+	#tidKnapper {
+		width: 400px;
+		margin: auto;
+	}
+	#treningInnstillinger {
+		float: right;
+	}
+	.box {
+		float: left;
+  		width: 33.33%;
+	}
+	.stat {
+		background-color: #880000;
+		width: 100%;
+	}
+	td {
+		vertical-align: bottom;
+		text-align: center;
+	}
+	table {
+		table-layout: fixed;
+		margin: auto;
+	}
+</style>
+
+
+<script>
+"use strict";
+// Innfoer indexOf hvis den ikke finnes i browseren
+if (!Array.prototype.indexOf)
+  Array.prototype.indexOf = function(searchValue, index) {
+    // In non-strict-mode, if the `this` variable is null
+    // or undefined, then it is set the the window object.
+    // Else, `this` is automaticly converted to an object.
+    var len = this.length >>> 0; // convert ot number or 0
+    
+    index |= 0;              // rounds and NaN-checks
+    if (index < 0)             // check if negative start
+      index = Math.max(len - index, 0);
+    else if (index >= len) // else, check if too big
+      return -1;
+    
+    if (searchValue === undefined)
+      // Because searchValue is undefined, keys that
+      // don't exist will have the same value as the
+      // searchValue, and thus do need to be checked.
+      do {
+        if (index in this && this[index] === undefined)
+          return index;
+      } while (++index !== len)
+    else
+      // Because searchValue is not undefined, there's no
+      // need to check if the current key is in the array
+      // because if the key isn't in the array, then it's
+      // undefined which is not equal to the searchValue.
+      do {
+        if (this[index] === searchValue)
+          return index;
+      } while (++index !== len)
+    
+    // if nothing was found, then simply return -1
+    return -1;
+  };
+
+// Globale variabler:
+var innstillinger = 2;
+var alternativer = 0;
+var tilfeldigTallListe = 0;
+var progresjon = 0;
+var utvalg = [];
+var ordTilRep = [];
+var revers = 0;
+var poengsum = 0;
+var glosetreningMidlertidig = [];
+
+var gloseTidAktivGlose = [0];
+var tidsintervaller = [5000, 25000, 120000, 600000, 3600000, 18000000, 86400000, 432000000, 2160000000, 10368000000, 63072000000]
+var gloseTidTelling = 0
+
+var ordliste = [['et', 'og', 6, 1], ['sum esse fu&#299; fut&#363;rum', '&#229; v&#230;re', 1, 1], ['qu&#299; quae quod', 'hvem, hvilken, hva', 3, 1], ['que', 'og (enklitisk)', 6, 1], ['in', 'i, p&#229; (+abl); inn i, opp p&#229; (+acc)', 5, 1], ['n&#333;n', 'ikke', 7, 1], ['hic haec hoc', 'denne, dette, den her', 3, 1], ['ille illa illud', 'denne, den der, den', 3, 1], ['t&#363; tu&#299; tibi t&#275;', 'du, deg', 3, 1], ['cum', 'med (prep. + abl); n&#229;r, da, fordi, selv om (konj. + konj)', 5, 1], ['ego me&#299; mihi m&#275;', 'jeg, meg', 3, 1], ['quisquam quicquam/quidquam', 'enhver', 3, 1], ['is ea id', 'han, hun, den, det', 3, 1], ['ad', 'til, hen til, mot (+acc)', 5, 1], ['ut, ut&#299;', 'som (+indik.); s&#229; at, for at (+konj.); hvordan', 7, 1], ['s&#299;', 'hvis', 6, 1], ['sui sibi s&#275;/s&#275;s&#275;', 'seg selv', 3, 1], ['omnis -e', 'all, enhver, hel', 8, 1], ['nec', 'og ikke', 6, 1], ['sed', 'men', 6, 1], ['&#257; ab abs', 'fra, av (+abl)', 5, 1], ['ipse ipsa ipsum', 'selv', 3, 1], ['possum posse potu&#299;', '&#229; kunne', 1, 1], ['aut', 'eller', 6, 1], ['m&#257;gnus -a -um', 'stor', 8, 1], ['ex, &#275;', 'ut av, ut fra (+abl)', 5, 1], ['suus -a -um', 'hans, hennes, sin', 8, 1], ['d&#333; dare ded&#299; datum', '&#229; gi', 1, 1], ['quam', 'hvordan?; enn (komp.)', 7, 1], ['per', 'gjennom (+acc)', 5, 1], ['vide&#333; vid&#275;re v&#299;d&#299; v&#299;sum', '&#229; se', 1, 1], ['faci&#333; facere f&#275;c&#299; factum', '&#229; gj&#248;re', 1, 1], ['d&#299;c&#333; d&#299;cere d&#299;x&#299; dictum', '&#229; si', 1, 1], ['iam', 'n&#229;, allerede', 7, 1], ['atque', 'og, og s&#229;, men', 6, 1], ['ac', 'og, og s&#229;, men', 6, 1], ['alius -a -ud', 'annen, andre', 8, 1], ['r&#275;s re&#299; f.', 'ting, sak', 2, 1], ['habe&#333; hab&#275;re habu&#299; habitum', '&#229; ha, &#229; holde', 1, 1], ['animus -&#299; m.', '&#229;nd, sinn, sjel', 2, 1], ['meus -a -um', 'min', 3, 1], ['deus -&#299; m.; dea -ae f.', 'gud, gudinne', 2, 1], ['multus -a -um', 'meget, mange', 8, 1], ['tuus -a -um', 'din', 8, 1], ['fer&#333; ferre tul&#299; l&#257;tum', '&#229; b&#230;re', 1, 1], ['d&#275;', 'ned fra, om, ang&#229;ende (+abl)', 5, 1], ['n&#275;', 'ikke, s&#229;nn at ikke', 6, 1], ['manus -&#363;s f.', 'h&#229;nd', 2, 1], ['n&#363;llus -a -um', 'ingen, intet', 8, 1], ['nunc', 'n&#229;', 7, 1], ['n&#333;s nostrum/nostr&#299; n&#333;b&#299;s n&#333;s', 'vi', 3, 1], ['noster nostra nostrum', 'v&#229;r', 3, 1], ['&#363;nus -a -um', '&#233;n, &#233;i, ett', 8, 1], ['di&#275;s di&#275;&#299; m./f.', 'dag', 2, 1], ['nihil, n&#299;l', 'intet, ingenting', 2, 1], ['tum, tunc', 'dengang, da', 7, 1], ['enim', 'for, nemlig', 6, 1], ['tamen', 'dog, allikevel', 6, 1], ['&#299;dem eadem idem', 'den samme', 3, 1], ['r&#275;x r&#275;gis m.', 'konge', 2, 1], ['nam, namque', 'for, nemlig', 6, 1], ['locus -&#299; m.', 'sted', 2, 1], ['veni&#333; ven&#299;re v&#275;n&#299; ventum', '&#229; komme', 1, 1], ['inter', 'mellom, iblant (+acc)', 5, 1], ['pars partis f.', 'del', 2, 1], ['vol&#333; velle volu&#299;', '&#229; &#248;nske, &#229; ville', 1, 1], ['etiam', 'ogs&#229;', 7, 1], ['bonus -a -um', 'god', 8, 1], ['ag&#333; agere &#275;g&#299; &#257;ctum', '&#229; drive, &#229; gj&#248;re, &#229; handle', 1, 1], ['terra -ae f.', 'land', 2, 1], ['pater patris m.', 'far', 2, 1], ['neque', 'og ikke', 6, 1], ['domus -&#363;s f.', 'hus, hjem', 2, 1], ['at', 'men', 6, 1], ['corpus corporis n.', 'legeme, kropp', 2, 1], ['quoque', 'ogs&#229;', 6, 2], ['aliquis -quae -quod', 'noen, visse', 3, 2], ['t&#333;tus -a -um', 'hel', 8, 2], ['s&#299;c', 's&#229;ledes', 7, 2], ['s&#299;c ... ut', 'p&#229; samme m&#229;te som', 7, 2], ['h&#299;c', 'her', 7, 2], ['hinc', 'herfra', 7, 2], ['iste ista istud', 'den der (hos deg)', 3, 2], ['ist&#299;c, ist&#363;c', 'derborte', 7, 2], ['urbs urbis f.', 'by', 2, 2], ['pet&#333; petere pet&#299;v&#299; pet&#299;tum', '&#229; gripe etter, &#229; s&#248;ke, &#229; be om', 1, 2], ['iube&#333; iub&#275;re iuss&#299; iussum', '&#229; by', 1, 2], ['vir vir&#299; m.', 'mann', 2, 2], ['bellum -&#299; n.', 'krig', 2, 2], ['v&#299;ta -ae f.', 'liv', 2, 2], ['hom&#333; hominis m.', 'menneske', 2, 2], ['tempus -oris n.', 'tid', 2, 2], ['magis', 'mer, snarere', 7, 2], ['pr&#299;mus -a -um', 'f&#248;rste', 8, 2], ['ubi', 'n&#229;r; hvor, hvordan, med hvem', 7, 2], ['hostis -is m./f.', 'fremmed, fiende', 2, 2], ['an', 'om (ved sp&#248;rsm&#229;l)', 6, 2], ['mors mortis f.', 'd&#248;d', 2, 2], ['tam', 's&#229; mye, til en slik grad', 7, 2], ['e&#333; &#299;re i&#299;/&#299;v&#299; itum', '&#229; g&#229;', 1, 2], ['arma -&#333;rum n. pl.', 'redskaper, v&#229;pen', 2, 2], ['superus -a -um', 'h&#248;y, &#248;vre', 8, 2], ['nisi, n&#299;', 'hvis ikke, medmindre, unntatt', 6, 2], ['vinc&#333; vincere v&#299;c&#299; victum', '&#229; seire', 1, 2], ['p&#333;n&#333; p&#333;nere posu&#299; positum', '&#229; sette', 1, 2], ['dum', 'mens (+ indik.); inntil (+ konj.); n&#229;r bare (+ konj.)', 6, 2], ['sine', 'uten (+abl)', 5, 2], ['tantus -a -um', 's&#229; meget, s&#229; mange', 8, 2], ['tene&#333; -&#275;re -u&#299; tentum', '&#229; holde, &#229; bevare', 1, 2], ['causa -ae f.', '&#229;rsak, grunn; p&#229; grunn av (m gen)', 2, 2], ['sequor sequ&#299; sec&#363;tus sum', '&#229; f&#248;lge', 1, 2], ['cr&#275;d&#333; cr&#275;dere cr&#275;did&#299; cr&#275;ditum', '&#229; tro, &#229; mene', 1, 2], ['accipi&#333; -cipere -c&#275;p&#299; -ceptum', 'motta', 1, 2], ['virt&#363;s -&#363;tis f.', 'mot, dyd', 2, 2], ['ante', 'foran (+ acc)', 5, 2], ['quaer&#333; -rere -s&#299;v&#299; -s&#299;tum', '&#229; s&#248;ke, &#229; sp&#248;rre', 1, 2], ['mitt&#333; mittere m&#299;s&#299; missum', '&#229; sende', 1, 2], ['v&#299;s f.', 'styrke', 2, 2], ['amor -&#333;ris m.', 'kj&#230;rlighet', 2, 2], ['caelum -&#299; n.', 'himmel', 2, 2], ['sub', 'under, tett p&#229; (+acc. eller abl.)', 5, 2], ['nox noctis f.', 'natt', 2, 2], ['ita', 's&#229;ledes, dermed', 7, 2], ['r&#275;gnum -&#299; n.', 'konged&#248;mme, kongerike', 2, 2], ['populus -&#299; m.', 'folk', 2, 2], ['autem', 'men', 6, 2], ['caput capitis n.', 'hode', 2, 2], ['mare -is n.', 'hav', 2, 2], ['qu&#299;dam quaedam quoddam', 'en bestemt person el. ting', 3, 2], ['m&#257;ter m&#257;tris f.', 'mor', 2, 2], ['pr&#333;', 'for, p&#229; vegne av (+abl)', 5, 2], ['quisquis quidquid', 'hvem som helst, hvilken som helst', 3, 2], ['v&#333;s', 'dere (pl.)', 3, 2], ['capi&#333; capere c&#275;p&#299; captum', '&#229; ta', 1, 2], ['quia', 'fordi', 6, 2], ['d&#363;c&#333; d&#363;cere d&#363;x&#299; ductum', '&#229; f&#248;re, &#229; lede', 1, 2], ['erg&#333;', 'derfor', 6, 2], ['n&#333;men -inis n.', 'navn', 2, 2], ['quidem', 'sannelig, vel, i det minste', 7, 2], ['miser misera miserum', 'ulykkelig, elendig', 8, 2], ['fort&#363;na -ae f.', 'tilfelle, lykke', 2, 2], ['novus -a -um', 'ny', 8, 2], ['gravis -e', 'tung, alvorlig', 8, 2], ['vel', 'eller; endog', 6, 2], ['longus -a -um', 'lang', 8, 2], ['parvus -a -um', 'liten', 8, 2], ['relinqu&#333; -linquere -l&#299;qu&#299; -lictum', '&#229; forlate', 1, 2], ['saepe', 'ofte', 7, 2], ['f&#299;&#333; fier&#299; factus sum', '&#229; bli', 1, 2], ['&#333;s &#333;ris n.', 'munn, ansikt', 2, 2], ['alter altera alterum', 'den ene (av to)', 8, 2], ['semper', 'alltid', 7, 2], ['deinde/dein', 'dernest', 7, 2], ['ignis -is m.', 'ild', 2, 3], ['modo', 'kun, blott', 7, 3], ['time&#333; -&#275;re -u&#299;', '&#229; frykte', 1, 3], ['scelus -eris n.', 'anklage, forbrytelse, synd', 2, 3], ['d&#275;be&#333; d&#275;b&#275;re d&#275;bu&#299; d&#275;bitum', '&#229; skylde; &#229; burde (+ inf.)', 1, 3], ['v&#299;v&#333; v&#299;vere v&#299;x&#299; v&#299;ctum', '&#229; leve', 1, 3], ['f&#257;tum -&#299; n.', 'skjebne, d&#248;d', 2, 3], ['voc&#333; -&#257;re', '&#229; kalle', 1, 3], ['altus -a -um', 'h&#248;y; dyp', 8, 3], ['par&#333; -&#257;re', '&#229; forberede', 1, 3], ['m&#299;les -itis m.', 'soldat', 2, 3], ['medius -a -um', 'midten, midterst, mellomst', 8, 3], ['inquam, inquis, inquit, inquiunt:', '&#229; si', 1, 3], ['post', 'etter (+acc.)', 5, 3], ['audi&#333; -&#299;re -&#299;v&#299;/-i&#299; -&#299;tum', '&#229; h&#248;re', 1, 3], ['put&#333; -&#257;re', '&#229; tenke, &#229; mene', 1, 3], ['annus -&#299; m.', '&#229;r', 2, 3], ['st&#333; st&#257;re stet&#299; statum', '&#229; st&#229;', 1, 3], ['v&#333;x v&#333;cis f.', 'stemme', 2, 3], ['genus generis n.', 'opphav, herkomst, slekt', 2, 3], ['refer&#333; referre rettul&#299; rel&#257;tum', '&#229; bringe tilbake', 1, 3], ['sci&#333; -&#299;re -&#299;v&#299;/-i&#299; -&#299;tum', '&#229; vite', 1, 3], ['m&#275;ns mentis f.', 'sinn, tanke, sjel', 2, 3], ['redd&#333; -dere -did&#299; -ditum', '&#229; gi tilbake', 1, 3], ['licet lic&#275;re licuit licitum est', 'det er tillatt (+dat. +infin.)', 1, 3], ['s&#333;lus -a -um', 'kun, alene', 8, 3], ['fugi&#333; fugere f&#363;g&#299; fugitum', '&#229; flykte', 1, 3], ['&#363;llus -a -um', 'noen', 8, 3], ['n&#275;m&#333;', 'ingen', 3, 3], ['n&#257;t&#363;ra -ae f.', 'natur', 2, 3], ['m&#333;s m&#333;ris m.', 'sedvane, vilje', 2, 3], ['beneficium -&#299; n.', 'vennlighet, tjeneste', 2, 3], ['pectus -oris n.', 'bryst', 2, 3], ['fid&#275;s -e&#299; f.', 'tro', 2, 3], ['patior pat&#299; passus sum', '&#229; lide, &#229; utholde, &#229; tillate', 1, 3], ['c&#363;ra -ae f.', 'omsorg, pleie', 2, 3], ['&#299;ra irae f.', 'vrede', 2, 3], ['verbum -&#299; n.', 'ord', 2, 3], ['prope', 'n&#230;r ved, tett p&#229;', 5, 3], ['prope', 'nesten', 7, 3], ['proximus', 'n&#230;rmest', 5, 3], ['par&#275;ns -ntis m./f.', 'forelder', 2, 3], ['puer puer&#299; m.', 'barn, gutt, slave', 2, 3], ['move&#333; -&#275;re m&#333;v&#299; m&#333;tum', '&#229; bevege', 1, 3], ['dolor -&#333;ris m.', 'smerte, sorg', 2, 3], ['g&#275;ns gentis f.', 'familie, klan', 2, 3], ['modus -&#299; m.', 'm&#229;te, m&#229;l', 2, 3], ['via -ae f.', 'vei, gate', 2, 3], ['quisque quaeque quidque', 'enhver', 3, 3], ['am&#299;cus -a -um', 'vennlig', 8, 3], ['p&#275;s pedis m.', 'fot', 2, 3], ['imperium -&#299; n.', 'befaling, makt', 2, 3], ['labor -&#333;ris m.', 'arbeid, strev', 2, 3], ['ing&#275;ns ingentis', 'stor, enorm', 8, 3], ['t&#257;lis t&#257;le', 's&#229;dan (kvalitativt)', 8, 3], ['parum', 'for lite, ikke nok', 7, 3], ['apud', 'tett p&#229;, n&#230;r ved (+acc.)', 5, 3], ['oculus -&#299; m.', '&#248;ye', 2, 3], ['unda -ae f.', 'b&#248;lge, vann', 2, 3], ['itaque', 'derfor, alts&#229;', 6, 3], ['vultus -&#363;s m.', 'mine, ansikt', 2, 3], ['cad&#333; cadere cecid&#299; c&#257;sum', '&#229; falle, &#229; d&#248;', 1, 3], ['n&#257;tus -&#299; m.', 's&#248;nn', 2, 3], ['quis quid', 'hvem, hva, hvilken', 3, 3], ['trah&#333; trahere tr&#257;x&#299; tr&#257;ctum', '&#229; trekke, &#229; dra', 1, 3], ['sanguis -inis m.', 'blod', 2, 3], ['metus -&#363;s m.', 'frykt', 2, 3], ['tantum, tantummodo', 'kun', 7, 3], ['c&#333;nsilium -&#299; n.', 'r&#229;d, r&#229;dslagning, r&#229;dsforsamling', 2, 3], ['coniunx coniugis m./f.', 'ektefelle, mann, hustru', 2, 3], ['am&#333; -&#257;re', '&#229; elske', 1, 3], ['levis -e', 'lett; kjapp, myk', 8, 3], ['duo duae duo', 'to', 4, 3], ['ferus -a -um', 'vill, utemmet', 8, 3], ['poena -ae f.', 'straff', 2, 3], ['castrum -&#299; n.', 'fort, borg', 2, 3], ['fr&#257;ter fr&#257;tris m.', 'bror', 2, 3], ['haud', 'ikke', 7, 4], ['malus -a -um', 'ond, d&#229;rlig', 8, 4], ['iace&#333; iac&#275;re iacu&#299;', 'ligge', 1, 4], ['l&#299;ber&#299;', 'barn (eg.: frie)', 8, 4], ['l&#299;ber l&#299;bera l&#299;berum', 'fri', 8, 4], ['iter itineris n.', 'reise, vei', 2, 4], ['ferrum -&#299; n.', 'jern, jernredskap', 2, 4], ['sp&#275;s spe&#299; f.', 'h&#229;p', 2, 4], ['puella -ae f.', 'pike', 2, 4], ['silva -ae f.', 'skog', 2, 4], ['bene', 'vel, godt', 7, 4], ['f&#299;nis -is m.', 'ende, grense', 2, 4], ['ger&#333; gerere gess&#299; gestum', '&#229; b&#230;re, &#229; avle', 1, 4], ['ne (enklitisk)', 'interrogativ partikel', 7, 4], ['dux ducis m./f.', 'f&#248;rer, feltherre', 2, 4], ['prem&#333; premere press&#299; pressum', '&#229; presse', 1, 4], ['dominus -&#299; m.; domina -ae f.', 'herre, husherre; frue, herskerinne', 2, 4], ['m&#333;ns montis m.', 'fjell, berg', 2, 4], ['uterque utraque utrumque', 'begge to', 6, 4], ['saevus -a -um', 'rasende, voldsom', 8, 4], ['l&#299;tus -oris n.', 'bredde, kyst', 2, 4], ['sole&#333; -&#275;re -u&#299; -itum', '&#229; pleie, &#229; v&#230;re vant til', 1, 4], ['m&#299;lle (pl.) m&#299;lia', 'tusen', 4, 4], ['equus -&#299; m.', 'hest', 2, 4], ['d&#363;rus -a -um', 'hard, herdet', 8, 4], ['c&#333;g&#333; c&#333;gere co&#275;g&#299; co&#257;ctum', '&#229; drive samme, &#229; forene', 1, 4], ['numquam', 'aldri', 7, 4], ['pr&#299;mum', 'for det f&#248;rste', 7, 4], ['morior mor&#299; mortuus sum', '&#229; d&#248;', 1, 4], ['carmen -inis n.', 'sang', 2, 4], ['t&#275;lum -&#299; n.', 'kastev&#229;pen, pil, spyd', 2, 4], ['rati&#333; -&#333;nis f.', 'plan, fornuft, grunn, system, regnskap', 2, 4], ['umbra -ae f.', 'skygge', 2, 4], ['ars artis f.', 'kunst, h&#229;ndverk, ferdighet', 2, 4], ['tot', 's&#229; mange', 7, 4], ['dextera -ae f.', 'h&#248;yre h&#229;nd', 2, 4], ['dexter -tra -trum', 'h&#248;yre', 8, 4], ['s&#299;gnum -&#299; n.', 'tegn, merke', 2, 4], ['laetus -a -um', 'glad, forn&#248;yet', 8, 4], ['qu&#257;lis -e', 'av hvilket slag? hvilken? (kvalitativt)', 3, 4], ['l&#275;x l&#275;gis f.', 'lov', 2, 4], ['per&#299;culum -&#299; n.', 'fare', 2, 4], ['n&#257;scor n&#257;sc&#299; n&#257;tus sum', '&#229; f&#248;des', 1, 4], ['exercitus -&#363;s m.', 'h&#230;r', 2, 4], ['pere&#333; -&#299;re -i&#299; -itum', '&#229; svinne hen, &#229; g&#229; fortapt', 1, 4], ['ventus -&#299; m.', 'vind', 2, 4], ['aude&#333; aud&#275;re ausus sum', '&#229; v&#229;ge, &#229; t&#248;rre', 1, 4], ['contr&#257;', 'imot, overfor (+acc)', 5, 4], ['aqua -ae f.', 'vann', 2, 4], ['rapi&#333; rapere rapu&#299; raptum', '&#229; gripe, &#229; rive bort med vold', 1, 4], ['simul', 'p&#229; samme tid', 7, 4], ['tr&#299;stis -e', 'bedr&#248;vet, m&#248;rk', 8, 4], ['m&#363;nus m&#363;neris n.', 'gave, offer, plikt', 2, 4], ['iuvenis -is m.', 'ung person', 2, 4], ['f&#257;ma -ae f.', 'rykte, omtale', 2, 4], ['adsum adesse affu&#299;', '&#229; v&#230;re til stede', 1, 4], ['v&#275;r&#333;', 'sannelig, fremdeles', 7, 4], ['p&#257;r paris', 'lik, jevn, matchende', 8, 4], ['vester vestra vestrum', 'deres (2. pers.)', 3, 4], ['fl&#363;men -inis n.', 'elv (eg.: flyt)', 2, 4], ['qu&#299;cumque quaecumque quodcumque', 'hvem som helst, hva som helst', 3, 4], ['certus -a -um', 'sikker, fast', 8, 4], ['fortis -e', 'modig', 8, 4], ['place&#333; plac&#275;re placu&#299; placitum', '&#229; behage', 1, 4], ['vert&#333; vertere vert&#299; versum', '&#229; vende', 1, 4], ['serv&#333; -&#257;re', '&#229; passe p&#229;, &#229; iaktta, &#229; bevare', 1, 4], ['honor -&#333;ris m.', '&#230;re, embete', 2, 4], ['d&#299;gnus -a -um', 'verdig', 8, 4], ['c&#363;nctus -a -um', 'alle, det hele, samtlige', 8, 4], ['toll&#333; tollere sustul&#299; subl&#257;tum', '&#229; opph&#248;ye, &#229; &#248;delegge', 1, 4], ['neg&#333; -&#257;re', '&#229; benekte, &#229; avvise', 1, 4], ['vetus veteris', 'gammel', 8, 4], ['eques equitis m.', 'rytter, ridder', 2, 4], ['tr&#257;d&#333; -dere -did&#299; -ditum', '&#229; overlevere, &#229; oppgi', 1, 4], ['flamma -ae f.', 'flamme, ild', 2, 4], ['l&#363;x l&#363;cis f.', 'lys', 2, 4], ['unde', 'hvorfra', 7, 4], ['rede&#333; -&#299;re -i&#299; -itum', '&#229; g&#229; tilbake', 1, 5], ['senti&#333; sent&#299;re s&#275;ns&#299; s&#275;nsum', '&#229; f&#248;le, &#229; mene', 1, 5], ['aurum -&#299; n.', 'gull', 2, 5], ['c&#275;d&#333; c&#275;dere cess&#299; cessum', '&#229; g&#229;, &#229; bevege, &#229; vike', 1, 5], ['saxum -&#299; n.', 'klippe, stein', 2, 5], ['ve', 'eller (enklitisk)', 6, 5], ['aet&#257;s -t&#257;tis f.', 'alder, tid', 2, 5], ['f&#275;l&#299;x -&#299;cis', 'lykkelig, heldig', 8, 5], ['loquor loqu&#299; loc&#363;tus sum', '&#229; tale, &#229; si', 1, 5], ['quantus -a -um', 'hvor stor? hvor meget? (kvantitativt)', 3, 5], ['coep&#299; coepisse coeptus', '&#229; begynne', 1, 5], ['igitur', 'derfor', 6, 5], ['i&#363;s i&#363;ris n.', 'rett, lov', 2, 5], ['m&#363;t&#333; -&#257;re', '&#229; endre', 1, 5], ['inveni&#333; -ven&#299;re -v&#275;n&#299; -ventum', '&#229; finne, &#229; oppdage', 1, 5], ['pr&#299;nceps -cipis', 'f&#248;rste, h&#248;vding, leder', 8, 5], ['ops opis f.', 'hjelp', 2, 5], ['recipi&#333; -cipere -c&#275;p&#299; -ceptum', '&#229; ta tilbake, &#229; motta', 1, 5], ['s&#333;l s&#333;lis m.', 'sol', 2, 5], ['c&#333;nsul -ulis m.', 'konsul', 2, 5], ['orbis -is m.', 'sirkel, ring', 2, 5], ['turba -ae f.', 'skare, menneskemengde', 2, 5], ['ager agr&#299; m.', 'mark', 2, 5], ['solv&#333; solvere solv&#299; sol&#363;tum', '&#229; l&#248;se', 1, 5], ['vitium -&#299; n.', 'feil, last', 2, 5], ['vulnus -eris n.', 's&#229;r', 2, 5], ['inde', 'derfra', 7, 5], ['sen&#257;tus -&#363;s m.', 'senat', 2, 5], ['&#363;tor &#363;t&#299; &#363;sus sum', '&#229; bruke', 1, 5], ['c&#333;pia -ae f.', 'overflod', 2, 5], ['opus operis n.', 'arbeid', 2, 5], ['col&#333; colere colu&#299; cultum', '&#229; bebo, &#229; dyrke', 1, 5], ['v&#333;tum -&#299; n.', 'l&#248;fte, &#248;nske', 2, 5], ['iugum -&#299; n.', '&#229;k, bakkerygg', 2, 5], ['qu&#257;', 'hvor, hvordan', 3, 5], ['tellus tell&#363;ris f.', 'jord', 2, 5], ['numerus -&#299; m.', 'tall, mengde', 2, 5], ['c&#333;gn&#333;sc&#333; -gn&#333;scere -gn&#333;v&#299; -gnitum', '&#229; l&#230;re, &#229; forst&#229;', 1, 5], ['victor -&#333;ris m.', 'seierherre', 2, 5], ['satis, sat', 'nok, tilstrekkelig', 7, 5], ['patria -ae f.', 'land, fedreland', 2, 5], ['seu', 'eller', 6, 5], ['c&#257;sus -&#363;s m.', 'fall, tilfelle, hendelse', 2, 5], ['frang&#333; frangere fr&#275;g&#299; fr&#257;ctum', '&#229; bryte, &#229; knuse', 1, 5], ['c&#299;vit&#257;s -&#257;tis f.', 'borgerskap', 2, 5], ['n&#333;sc&#333; n&#333;scere n&#333;v&#299; n&#333;tum', '&#229; l&#230;re, &#229; vite', 1, 5], ['proelium -&#299; n.', 'kamp', 2, 5], ['&#275;ripi&#333; -ripere -ripu&#299; -reptum', '&#229; rive bort', 1, 5], ['mundus -&#299; m.', 'verden', 2, 5], ['cursus -&#363;s m.', 'kurs, l&#248;p, rask bevegelse', 2, 5], ['vix', 'neppe', 7, 5], ['n&#257;vis -is f.', 'skip', 2, 5], ['lacrima -ae f.', 't&#229;re', 2, 5], ['h&#363;m&#257;nus -a -um', 'menneskelig', 8, 5], ['mollis -e', 'bl&#248;t, mild', 8, 5], ['mane&#333; man&#275;re m&#257;ns&#299; m&#257;nsum', '&#229; forbli', 1, 5], ['&#257;gmen -minis n.', 'skare', 2, 5], ['s&#299;dus -eris n.', 'stjernetegn', 2, 5], ['gl&#333;ria -ae f.', '&#230;re, heder', 2, 5], ['di&#363;:', 'i lang tid', 7, 5], ['s&#299;ve', 'eller', 6, 5], ['tamquam', 'likesom, som om', 7, 5], ['fuga -ae f.', 'flukt', 2, 5], ['t&#363;tus -a -um', 'sikker, forsiktig', 8, 5], ['auris -is f.', '&#248;re', 2, 5], ['ali&#275;nus -a -um', 'fremmed', 8, 5], ['h&#363;c', 'hit, til dette sted', 7, 5], ['tace&#333; -&#275;re -u&#299; -itum', '&#229; v&#230;re stille', 1, 5], ['legi&#333; -&#333;nis f.', 'h&#230;rdivisjon (eg.: utvalg)', 2, 5], ['ostend&#333; ostendere ostend&#299; ostentum', '&#229; vise, &#229; rekke frem', 1, 5], ['socius -a -um', 'vennlig', 8, 5], ['pr&#333;sum prodesse profu&#299;', '&#229; v&#230;re brukbar', 1, 5], ['&#257;ra -ae f.', 'alter', 2, 5], ['l&#363;men luminis n.', 'lys', 2, 5], ['teg&#333; tegere t&#275;x&#299; t&#275;ctum', '&#229; dekke, &#229; skjule', 1, 5], ['turpis -e', 'heslig, stygg', 8, 6], ['volupt&#257;s -&#257;tis f.', 'nytelse, forn&#248;yelse', 2, 6], ['adh&#363;c', 'til n&#229;', 7, 6], ['gr&#257;tia -ae f.', 'n&#229;de, gunst; (pl.) takk', 2, 6], ['ini&#363;ria -ae f.:', 'urett, krenkelse', 2, 6], ['latus -eris n.', 'side, flanke', 2, 6], ['dulcis -e', 's&#248;t', 8, 6], ['postquam', 'etter, da', 6, 6], ['extr&#275;mus -a -um', 'ytterst, lengst vekk, h&#248;yest', 8, 6], ['t&#275;ctum -&#299; n.', 'tak; hus, bygning', 2, 6], ['ingenium -&#299; n.', 'anlegg, beskaffenhet, talent', 2, 6], ['p&#257;x p&#257;cis f.', 'fred', 2, 6], ['can&#333; canere cecin&#299; cantum', '&#229; synge', 1, 6], ['iuv&#333; iuv&#257;re i&#363;v&#299; i&#363;tum', '&#229; hjelpe; &#229; behage', 1, 6], ['campus -&#299; m.', 'slette, mark', 2, 6], ['claud&#333; claudere claus&#299; clausum', '&#229; lukke', 1, 6], ['doce&#333; -&#275;re -u&#299; doctum', '&#229; undervise', 1, 6], ['excipi&#333; -cipere -c&#275;p&#299; -ceptum', '&#229; ta ut', 1, 6], ['cl&#257;rus -a -um', 'klar', 8, 6], ['ill&#299;c', 'p&#229; det sted', 7, 6], ['illinc', 'fra det sted', 7, 6], ['procul', 'p&#229; avstand', 7, 6], ['sacer sacra sacrum', 'hellig', 8, 6], ['mora -ae f.', 'forsinkelse, hindring', 2, 6], ['long&#275;', 'langt vekk', 7, 6], ['super', 'over (+acc/abl)', 5, 6], ['err&#333; -&#257;re', '&#229; fare vill, &#229; streife', 1, 6], ['s&#275;d&#275;s -is f.', 'sete, bolig', 2, 6], ['c&#363;r', 'hvorfor', 7, 6], ['coma -ae f.', 'h&#229;r', 2, 6], ['ai&#333;', '&#229; bekrefte', 1, 6], ['gaude&#333; gaud&#275;re g&#257;v&#299;sus sum', '&#229; glede seg', 1, 6], ['be&#257;tus -a -um', 'glad, velsignet', 8, 6], ['perveni&#333; -ven&#299;re -v&#275;n&#299; -ventum', '&#229; ankomme', 1, 6], ['v&#275;rus -a -um', 'sann', 8, 6], ['incipi&#333; -cipere -c&#275;p&#299; -ceptum', '&#229; begynne', 1, 6], ['parc&#333; parcere peperc&#299; parsum', '&#229; spare, &#229; sk&#229;ne', 1, 6], ['vestis -is f.', 'bekledning, teppe', 2, 6], ['similis -e', 'lik, maken til', 8, 6], ['caed&#275;s -is f.', 'drap, mord', 2, 6], ['&#333;rd&#333; -&#299;nis m.', 'rekke, orden, stand', 2, 6], ['opt&#333; -&#257;re', '&#229; velge', 1, 6], ['virg&#333; -inis f.', 'jomfru, pike', 2, 6], ['leg&#333; legere l&#275;g&#299; l&#275;ctum', '&#229; samle, &#229; velge, &#229; lese', 1, 6], ['aura -ae f.', 'luft, vind', 2, 6], ['impetus -&#363;s m.', 'angrep', 2, 6], ['f&#333;rma -ae f.', 'form, skikkelse, bilde, skj&#248;nnhet', 2, 6], ['praest&#333; -st&#257;re -stit&#299; -stitum', 'st&#229; foran, innest&#229; for, oppretholde', 1, 6], ['aequor aequoris n.', 'jevn flate', 2, 6], ['misce&#333; misc&#275;re miscu&#299; mixtum', '&#229; blande', 1, 6], ['spatium -&#299; n.', 'rom, st&#248;rrelse', 2, 6], ['tandem', 'endelig, omsider', 7, 6], ['&#299;nferus -a -um', 'lav, nedre', 8, 6], ['metu&#333; metuere metu&#299;', '&#229; frykte', 1, 6], ['tempt&#333; -&#257;re (el. tento)', '&#229; f&#248;le p&#229;, &#229; fors&#248;ke, &#229; friste', 1, 6], ['tr&#257;nse&#333; -&#299;re -i&#299; -itum', '&#229; g&#229; over, &#229; g&#229; gjennom', 1, 6], ['ultimus -a -um', 'sist, fjernest, ultimat', 8, 6], ['add&#333; -dere -did&#299; -ditum', '&#229; legge til, &#229; &#248;ke', 1, 6], ['gr&#257;tus -a -um', 'behagelig, takknemmelig', 8, 6], ['laud&#333; -&#257;re', '&#229; prise', 1, 6], ['n&#333;ndum', 'ikke enn&#229;', 7, 6], ['imp&#333;n&#333; -ere -posu&#299; -positum', '&#229; sette p&#229;, &#229; p&#229;legge', 1, 6], ['somnus -&#299; m.', 's&#248;vn; (pl.) dr&#248;mme', 2, 6], ['aci&#275;s -&#275;&#299; f.', 'odde, spiss', 2, 6], ['r&#363;rsus', 'tilbake, igjen', 7, 6], ['cupi&#333; -ere -&#299;v&#299; -&#299;tum', '&#229; begj&#230;re', 1, 6], ['exspect&#333; -&#257;re', '&#229; vente, &#229; forvente', 1, 6], ['comp&#333;n&#333; -p&#333;nere posu&#299; positum', '&#229; bygge, &#229; sette sammen', 1, 6], ['laus laudis f.', 'pris, ros', 2, 6], ['absum abesse &#257;fu&#299;', '&#229; v&#230;re frav&#230;rende', 1, 6], ['&#363;sus -&#363;s m.', 'bruk, &#248;velse', 2, 6], ['velut', 'slik som; som om (m konj)', 7, 6], ['comes comitis m./f.', 'ledsager', 2, 6], ['ob', 'mot, p&#229; grunn av (+acc)', 5, 6], ['studium -&#299; n.', 'iver, virksomhet', 2, 6], ['facilis -e', 'lett, enkel', 8, 6], ['n&#363;men -inis n.', 'guddommelig vilje', 2, 7], ['sapi&#275;ns -ntis', 'vis, klok', 8, 7], ['s&#363;m&#333; s&#363;mere s&#363;mps&#299; s&#363;mptum', '&#229; ta opp', 1, 7], ['n&#333;bilis -e', 'kjent, fornem, edel', 8, 7], ['qu&#299;n', '(adv.) hvorfor ikke, jamen; (konj.) slik at ikke (+ konj.)', 7, 7], ['fle&#333; fl&#275;re fl&#275;v&#299; fl&#275;tum', '&#229; gr&#229;te', 1, 7], ['n&#333;l&#333; n&#333;lle n&#333;lu&#299;', '&#229; v&#230;re uvillig', 1, 7], ['pl&#275;nus -a -um', 'full', 8, 7], ['adversus (-um)', 'imot, overfor (+acc)', 7, 7], ['nemus nemoris n.', 'skog', 2, 7], ['c&#257;rus -a -um', 'dyr, dyrebar', 8, 7], ['d&#275;sum -esse -fu&#299;', '&#229; mangle', 1, 7], ['l&#275;g&#257;tus -&#299; m.', 'gesandt, legat', 2, 7], ['disc&#333; -ere didic&#299;', '&#229; l&#230;re', 1, 7], ['furor -&#333;ris m.', 'raseri', 2, 7], ['amnis -is m.', 'str&#248;m, elv', 2, 7], ['arbor arboris f.', 'tre', 2, 7], ['mox', 'snart', 7, 7], ['e&#333;', 'dit', 7, 7], ['c&#299;vis -is m./f.', 'borger', 2, 7], ['occup&#333; -&#257;re', '&#229; erobre, &#229; legge beslag p&#229;, &#229; forekomme', 1, 7], ['spect&#333; -&#257;re', '&#229; se p&#229;, &#229; betrakte', 1, 7], ['tergum -&#299; n.', 'rygg, bakside', 2, 7], ['cr&#299;men -inis n.', 'anklage, forbrydelse', 2, 7], ['d&#333;num -&#299; n.', 'gave', 2, 7], ['n&#333;tus -a -um', 'bekjent', 8, 7], ['sinus -&#363;s m.', 'fold, bukt', 2, 7], ['faci&#275;s -&#275;&#299; f.', 'skikkelse, ansikt', 2, 7], ['rump&#333; rumpere r&#363;p&#299; ruptum', '&#229; bryte, &#229; sprenge', 1, 7], ['membrum -&#299; n.', 'lem, kroppsdel', 2, 7], ['umquam', 'noensinne', 7, 7], ['aspici&#333; -ere -sp&#275;x&#299; -spectum', '&#229; se til el. p&#229;, &#229; beskue', 1, 7], ['prius or priusquam', 'f&#248;r', 7, 7], ['templum -&#299; n.', 'innviet sted, tempel', 2, 7], ['&#257;mitt&#333; -mittere -m&#299;s&#299; -missum', '&#229; la g&#229;, &#229; miste', 1, 7], ['p&#333;sc&#333; p&#333;scere pop&#333;sc&#299;', '&#229; kreve; &#229; forlange', 1, 7], ['perd&#333; -dere -did&#299; -ditum', '&#229; &#248;delegge', 1, 7], ['quamv&#299;s', 's&#229; mye du vil, selvom', 7, 7], ['tener -era -erum', 'bl&#248;t, sped', 8, 7], ['currus -&#363;s m.', 'stridsvogn, vogn; fart&#248;y', 2, 7], ['precor -&#257;r&#299;', '&#229; be, &#229; p&#229;kalle', 1, 7], ['anima -ae f.', 'vind, &#229;nd, sjel', 2, 7], ['conting&#333; -tingere -tig&#299; -tactum', '&#229; ber&#248;re, &#229; vedkomme', 1, 7], ['l&#299;bert&#257;s -&#257;tis f.', 'frihet', 2, 7], ['servus -&#299; m.', 'slave', 2, 7], ['soror -&#333;ris f.', 's&#248;ster', 2, 7], ['fluctus -&#363;s m', 'b&#248;lge', 2, 7], ['qu&#299;ppe', 'naturligvis, nemlig', 7, 7], ['exig&#333; -igere -&#275;g&#299; -&#257;ctum', '&#229; utdrive, &#229; samle', 1, 7], ['f&#275;mina -ae f.', 'kvinne', 2, 7], ['nimius -a -um', 'til overs, overfl&#248;dig', 8, 7], ['fall&#333; fallere fefell&#299; falsum', '&#229; bedra', 1, 7], ['m&#299;ror m&#299;r&#257;r&#299; m&#299;r&#257;tus sum', '&#229; undres, &#229; beundre', 1, 7], ['classis -is f.', 'klasse, h&#230;rdeling', 2, 7], ['sede&#333; sed&#275;re s&#275;d&#299; sessum', '&#229; sitte', 1, 7], ['singul&#299; -ae -a', 'en til hver, en om gangen', 8, 7], ['m&#363;rus -&#299; m.', 'mur', 2, 7], ['noce&#333; noc&#275;re nocu&#299;', '&#229; skade', 1, 7], ['quoniam', 'da, ettersom', 6, 7], ['fax facis f.', 'fakkel', 2, 7], ['intelleg&#333; -legere -l&#275;x&#299; -l&#275;ctum:', '&#229; forst&#229;', 1, 7], ['iung&#333; iungere i&#363;nx&#299; i&#363;nctum', '&#229; forene', 1, 7], ['affer&#333; afferre attul&#299; all&#257;tum', '&#229; bringe til', 1, 7], ['c&#333;git&#333; -&#257;re', '&#229; tenke, &#229; overveie', 1, 7], ['l&#299;men l&#299;minis n.', 'grense', 2, 7], ['p&#363;blicus -a -um', 'offentlig, felles', 8, 7], ['queror quer&#299; questus sum', '&#229; klage', 1, 7], ['exemplum -&#299; n.', 'eksempel', 2, 7], ['prex precis f.', 'b&#248;nn, p&#229;kallelse', 2, 7], ['dubit&#333; -&#257;re', '&#229; t&#248;ve, &#229; tvile', 1, 7], ['odium -&#299; n.', 'hat', 2, 7], ['fund&#333; fundere f&#363;d&#299; f&#363;sum', '&#229; &#248;se, &#229; sprede', 1, 7], ['f&#363;nus f&#363;neris n.', 'begravelse, d&#248;d', 2, 7], ['nesci&#333; -sc&#299;re', '&#229; v&#230;re uvitende, ikke &#229; vite', 1, 7], ['prior prius', 'tidligere, foreg&#229;ende', 8, 7], ['&#363;sque', 'inntil, uavbrutt', 7, 8], ['dubius -a -um', 'tvilende, skeptisk', 8, 8], ['tend&#333; tendere tetend&#299; tentum', '&#229; spenne, &#229; strekke', 1, 8], ['pec&#363;nia -ae f.', 'penge', 2, 8], ['quemadmodum', 'p&#229; hvilken m&#229;te, hvordan', 7, 8], ['sparg&#333; spargere spars&#299; sparsum', '&#229; spre', 1, 8], ['tr&#275;s tria', 'tre', 4, 8], ['tang&#333; tangere tetig&#299; t&#257;ctum', '&#229; r&#248;re', 1, 8], ['responde&#333; -spond&#275;re -spond&#299; -sp&#333;nsum', '&#229; svare', 1, 8], ['timor -&#333;ris m.', 'frykt', 2, 8], ['proper&#333; -&#257;re', '&#229; skynde', 1, 8], ['sube&#333; -&#299;re -i&#299; -itum', '&#229; g&#229; under; &#229; utholde', 1, 8], ['vale&#333; val&#275;re valu&#299;', '&#229; v&#230;re sterk', 1, 8], ['cond&#333; -dere -did&#299; -ditum', '&#229; bygge, &#229; stifte; &#229; oppbevare; &#229; gjemme', 1, 8], ['nef&#257;s n. indecl.', 'skjensel, krenkelse', 2, 8], ['quondam', 'tidligere, engang', 7, 8], ['auxilium -&#299; n.', 'st&#248;tte, hjelp', 2, 8], ['d&#275;ser&#333; -ere d&#275;seru&#299; d&#275;sertum', '&#229; forlate', 1, 8], ['n&#363;dus -a -um', 'naken, blottet', 8, 8], ['auctor -&#333;ris m.', 'opphavsmann, forfatter', 2, 8], ['animal -&#257;lis n.', 'dyr, levende vesen', 2, 8], ['decus decoris n.', 'smykke, herlighet', 2, 8], ['sal&#363;s -&#363;tis f.', 'helse, frelse, sikkerhet', 2, 8], ['pate&#333; pat&#275;re patu&#299;', '&#229; v&#230;re &#229;pen', 1, 8], ['rog&#333; -&#257;re', '&#229; sp&#248;rre', 1, 8], ['uxor ux&#333;ris f.', 'hustru', 2, 8], ['abe&#333; -&#299;re -i&#299; -itum', '&#229; g&#229; bort', 1, 8], ['reg&#333; regere r&#275;x&#299; r&#275;ctum', '&#229; styre, &#229; herske, &#229; lede', 1, 8], ['ade&#333;', 'i den grad', 7, 8], ['aufer&#333; auferre abstul&#299; abl&#257;tum', '&#229; ta bort', 1, 8], ['quantum', 's&#229; meget, s&#229; stort (kvantitativt)', 7, 8], ['senex -is m.', 'gammel mann', 2, 8], ['fr&#333;ns frontis f.', 'panne, front', 2, 8], ['propter', 'p&#229; grunn av (+acc)', 5, 8], ['r&#275;gius -a -um', 'kongelig', 8, 8], ['curr&#333; currere cucurr&#299; cursum', '&#229; l&#248;pe', 1, 8], ['pell&#333; pellere pepul&#299; pulsum', '&#229; sl&#229;', 1, 8], ['d&#299;ves d&#299;vitis', 'rik', 8, 8], ['i&#363;dic&#333; -&#257;re', '&#229; d&#248;mme, &#229; beslutte', 1, 8], ['pecus -oris n.', 'kveg, sm&#229;kveg', 2, 8], ['pot&#275;ns potentis', 'i stand til, mektig, sterk', 8, 8], ['scr&#299;b&#333; scr&#299;bere scr&#299;ps&#299; scr&#299;ptum', '&#229; skrive', 1, 8], ['pulcher -chra -chrum', 'skj&#248;nn, vakker', 8, 8], ['surg&#333; surgere surr&#275;x&#299; surr&#275;ctum', '&#229; stige', 1, 8], ['c&#275;terum', 'ellers, for&#248;vrig', 7, 8], ['care&#333; -&#275;re -u&#299;', '&#229; mangle', 1, 8], ['effici&#333; -ficere -f&#275;c&#299; -fectum', '&#229; danne, &#229; utf&#248;re', 1, 8], ['&#333;lim', 'tidligere, dengang', 7, 8], ['serm&#333; -&#333;nis m.', 'samtale, tale, spr&#229;k', 2, 8], ['exerce&#333; -erc&#275;re -ercu&#299; -ercitum', '&#229; sette i bevegelse, &#229; &#248;ve', 1, 8], ['gradus -&#363;s m.', 'trinn, stilling', 2, 8], ['agit&#333; -&#257;re', '&#229; drive', 1, 8], ['fort&#275;', 'tilfeldig', 7, 8], ['honestus -a -um', 'som nyter &#230;re, hederlig, aktverdig', 8, 8], ['moror mor&#257;r&#299; mor&#257;tus sum', '&#229; t&#248;ve, &#229; hindre', 1, 8], ['praesidium -&#299; n.', 'beskyttelse, hjelp', 2, 8], ['son&#333; son&#257;re sonu&#299; sonitum', '&#229; lyde, &#229; klinge', 1, 8], ['praebe&#333; -&#275;re -u&#299; -itum', '&#229; tilby, &#229; yte, &#229; levere', 1, 8], ['regi&#333; -&#333;nis f.', 'grense, egn', 2, 8], ['sententia -ae f.', 'holdning, mening', 2, 8], ['&#257;cer &#257;cris &#257;cre', 'skarp', 8, 8], ['supr&#257;', 'over, tidligere enn (+acc)', 5, 8], ['brevis -e', 'kort, smal, liten', 8, 8], ['citus -a -um', 'hurtig', 8, 8], ['cornu -&#363;s n.', 'horn', 2, 8], ['ingr&#257;tus -a -um:', 'ubehagelig, utakknemmelig', 8, 8], ['moenia -ium n. pl.', 'murer, festningsverk', 2, 8], ['vinculum -&#299; n.', 'lenke, b&#229;nd', 2, 8], ['ade&#333; -&#299;re -i&#299; -itum', '&#229; g&#229; til', 1, 8], ['c&#275;terus -a -um', 'den andre; resten', 8, 8], ['exe&#333; -&#299;re -i&#299; -itum', '&#229; g&#229; ut av', 1, 8], ['m&#257;l&#333; m&#257;lle m&#257;lu&#299;', '&#229; foretrekke', 1, 8], ['speci&#275;s -&#275;&#299; f.', 'syn, skikkelse', 2, 8], ['ultr&#257;', 'p&#229; den annen side, ut over (+acc)', 5, 8], ['cert&#275;', 'sikkert, bestemt', 7, 8], ['imper&#333; -&#257;re', '&#229; befale, &#229; beherske', 1, 9], ['male', 'slemt, d&#229;rlig', 7, 9], ['prohibe&#333; -&#275;re -u&#299; -itum', '&#229; holde borte, &#229; forhindre, &#229; forby', 1, 9], ['cl&#257;mor -&#333;ris m.', 'rop, skrik', 2, 9], ['d&#333;n&#333; -&#257;re', '&#229; gi, &#229; utstyre', 1, 9], ['officium -&#299; n.', 'plikt, tjeneste', 2, 9], ['committ&#333; -mittere -m&#299;s&#299; -missum', '&#229; f&#248;re sammen, &#229; begynne, &#229; overgi', 1, 9], ['cr&#275;sc&#333; cr&#275;scere cr&#275;v&#299; cr&#275;tum', '&#229; vokse, &#229; &#248;ke', 1, 9], ['aequus -a -um', 'likes&#229;, jevn', 8, 9], ['factum -&#299; n.', 'handling', 2, 9], ['caed&#333; caedere cec&#299;d&#299; caesum', '&#229; drepe', 1, 9], ['ex&#299;stim&#333; -&#257;re', '&#229; vurdere, &#229; bed&#248;mme', 1, 9], ['acc&#275;d&#333; -c&#275;dere -cess&#299; -cessum', '&#229; n&#230;rme (seg)', 1, 9], ['contemn&#333; -temnere -temps&#299; -temptum', '&#229; forakte', 1, 9], ['pudor pud&#333;ris m.', 'skam, kyskhet', 2, 9], ['ant&#299;quus -a -um', 'gammel, som h&#248;rer fortiden til', 8, 9], ['&#257;rde&#333; &#257;rd&#275;re &#257;rs&#299; &#257;rsum', '&#229; brenne', 1, 9], ['ibi', 'der', 7, 9], ['pr&#333;vincia -ae f.', 'verv, embete; provins', 2, 9], ['quand&#333;', 'n&#229;r?, siden', 7, 9], ['cust&#333;s cust&#333;dis m.', 'vokter', 2, 9], ['supersum -esse -fu&#299;', '&#229; forbli, &#229; overleve', 1, 9], ['d&#275;sin&#333; -sinere -si&#299; -situm', '&#229; opph&#248;re', 1, 9], ['fessus -a -um', 'trett, utmattet', 8, 9], ['praeda -ae f.', 'krigsbytte; byttedyr', 2, 9], ['memoria -ae f.', 'hukommelse, erindring', 2, 9], ['d&#299;vid&#333; -ere d&#299;v&#299;s&#299; d&#299;v&#299;sum', '&#229; dele, &#229; adskille', 1, 9], ['pretium -&#299; n.', 'pris, verdi, bel&#248;nning', 2, 9], ['pontus -&#299; m.', '&#229;pent hav', 2, 9], ['varius -a -um', 'brokete, forskjellig, vekslende', 8, 9], ['veh&#333; vehere v&#275;x&#299; vectum', '&#229; b&#230;re (medialt: &#229; kj&#248;re)', 1, 9], ['falsus -a -um', 'falsk', 8, 9], ['niger nigra nigrum', 'svart', 8, 9], ['oppidum -&#299; n.', 'by', 2, 9], ['pondus ponderis n.', 'vekt', 2, 9], ['arvum -&#299; n.', '&#229;ker (eg. adj.: pl&#248;yd)', 2, 9], ['arx arcis f.', 'borg, festning', 2, 9], ['sors sortis f.', 'lodd, skjebne; orakelsvar', 2, 9], ['v&#299;num -&#299; n.', 'vin', 2, 9], ['d&#299;versus -a -um', 'vendt fra hverandre, forskjellig', 8, 9], ['orior or&#299;r&#299; ortus sum', '&#229; st&#229; opp, &#229; begynne', 1, 9], ['ecce', 'se!', 7, 9], ['quamquam', 'skj&#248;nt, men', 6, 9], ['c&#333;nfer&#333; c&#333;nferre contul&#299; coll&#257;tum', '&#229; samle, &#229; bringe til', 1, 9], ['facinus facinoris n.', 'handling, ud&#229;d', 2, 9], ['retine&#333; -tin&#275;re -tinu&#299; -tentum', '&#229; holde tilbake, &#229; bevare', 1, 9], ['sp&#275;r&#333; -&#257;re', '&#229; h&#229;pe', 1, 9], ['pl&#275;bs pl&#275;bis f.', 'almue, folk', 2, 9], ['p&#363;gna -ae f.', 'kamp', 2, 9], ['repet&#333; -petere -pet&#299;v&#299; -pet&#299;tum', '&#229; s&#248;ke igjen, &#229; kreve, &#229; vende tilbage', 1, 9], ['c&#333;nstitu&#333; -stituere -stitu&#299; -stit&#363;tum', '&#229; sette sammen, &#229; opprette, &#229; fastsette', 1, 9], ['d&#275;fend&#333; -fendere -fend&#299; -f&#275;nsum', '&#229; forsvare, &#229; st&#248;te bort', 1, 9], ['mar&#299;tus -&#299; m.', 'gift mann', 2, 9], ['cern&#333; cernere cr&#275;v&#299; cr&#275;tum', '&#229; adskille, &#229; skjelne', 1, 9], ['superbus -a -um', 'hovmodig, overmodig; opph&#248;yet', 8, 9], ['adversus -a -um', 'vendt mot, motsatt', 8, 9], ['morbus -&#299; m.', 'sykdom', 2, 9], ['s&#257;nctus -a -um', 'hellig, ren', 8, 9], ['comm&#363;nis -e', 'felles, allminnelig', 8, 9], ['d&#275;d&#363;c&#333; -d&#363;cere -d&#363;x&#299; -ductum', '&#229; f&#248;re bort', 1, 9], ['r&#299;pa -ae f.', 'elvebredde', 2, 9], ['conc&#275;d&#333; -c&#275;dere -cess&#299; -cessum', '&#229; g&#229; bort; &#229; innr&#248;mme', 1, 9], ['h&#333;ra -ae f.', 'time', 2, 9], ['vet&#333; -&#257;re vetu&#299; vet&#299;tum', '&#229; forby', 1, 9], ['cohors cohortis f.', 'innhegnet g&#229;rd, skare, kohort', 2, 9], ['g&#299;gn&#333; g&#299;gnere genu&#299; genitum', '&#229; avle, &#229; f&#248;de', 1, 9], ['super&#333; -&#257;re', '&#229; rage opp, &#229; v&#230;re tilovers', 1, 9], ['maestus -a -um', 's&#248;rgelig, bedr&#248;vet', 8, 9], ['memin&#299; meminisse', '&#229; huske', 1, 9], ['imple&#333; -&#275;re -pl&#275;v&#299; -pl&#275;tum', '&#229; fylle', 1, 9], ['m&#257;gnit&#363;d&#333; -inis f.', 'storhet', 2, 9], ['vacuus -a -um', 'tom', 8, 9], ['vagus -a -um', 'omstreifende', 8, 9], ['vulgus -&#299; n. and m.', 'folk; mengde', 2, 9], ['defici&#333; -ficere -f&#275;c&#299; -fectum', '&#229; falle fra, &#229; svinne, &#229; svikte', 1, 9], ['occurr&#333; -currere -cucurr&#299; -cursum', '&#229; komme i m&#248;te, &#229; inntreffe', 1, 10], ['statu&#333; -ere -u&#299; -&#363;tum', '&#229; oppstille, &#229; bestemme', 1, 10], ['ide&#333;', 'derfor', 7, 10], ['praemium -&#299; n.', 'bel&#248;nning, bytte', 2, 10], ['praetere&#257;', 'dessuten', 7, 10], ['tertius -a -um', 'tredje', 8, 10], ['supplicium -&#299; n.', 'straff, avstraffelse', 2, 10], ['v&#257;t&#275;s -is m.', 'sannsier, dikter', 2, 10], ['astrum -&#299; n.', 'stjerne, stjernetegn', 2, 10], ['undique', 'allesteds fra', 7, 10], ['canis -is m./f.', 'hund', 2, 10], ['&#275;d&#333; &#275;dere &#275;did&#299; &#275;ditum', '&#229; f&#248;re; &#229; frembringe', 1, 10], ['fateor fat&#275;r&#299; fassus sum', '&#229; bekjenne, &#229; innr&#248;mme, &#229; erkl&#230;re', 1, 10], ['am&#299;citia -ae f.', 'vennskap', 2, 10], ['aureus -a -um', 'gyllen, av gull', 8, 10], ['candidus -a -um', 'hvit', 8, 10], ['interim', 'imens', 7, 10], ['fr&#363;str&#257;', 'forgjeves', 7, 10], ['late&#333; lat&#275;re latu&#299;', '&#229; v&#230;re skjult', 1, 10], ['os ossis n.', 'knokkel, bein', 2, 10], ['s&#275;c&#363;rus -a -um', 'ubekymret, sikker', 8, 10], ['conveni&#333; -ven&#299;re -v&#275;n&#299; -ventum', '&#229; komme sammen, &#229; m&#248;te', 1, 10], ['interfici&#333; -ficere -f&#275;c&#299; -fectum', '&#229; drepe', 1, 10], ['appell&#333; -pell&#257;re', '&#229; tiltale; &#229; benevne, &#229; kalle', 1, 10], ['dolus -&#299; m.', 'svik, bedrageri', 2, 10], ['permitt&#333; -mittere -m&#299;s&#299; -missum', '&#229; overgi, &#229; tillate', 1, 10], ['sp&#299;ritus -&#363;s m.', 'vind, &#229;nde, liv, &#229;nd', 2, 10], ['intr&#257;', 'innenfor (+acc)', 5, 10], ['terre&#333; terr&#275;re terru&#299; territum', '&#229; skremme, &#229; forskrekke', 1, 10], ['f&#333;ns fontis m.', 'kilde', 2, 10], ['invidia -ae f.', 'misunnelse', 2, 10], ['pugn&#333; -&#257;re', 'kjempe', 1, 10], ['auge&#333; aug&#275;re aux&#299; auctum', '&#229; &#248;ke', 1, 10], ['littera -ae f.', 'bokstav; (pl.) skrifter', 2, 10], ['mone&#333; mon&#275;re monu&#299; monitum', '&#229; minne om, &#229; formane', 1, 10], ['d&#299;vitiae -&#257;rum f. pl.', 'rikdom', 2, 10], ['experior -per&#299;r&#299; -pertus sum', '&#229; pr&#248;ve, &#229; erfare', 1, 10], ['&#333;tium -&#299; n.', 'fritid', 2, 10], ['vest&#299;gium -&#299; n.', 'fotspor, spor, merke', 2, 10], ['sin&#333; sinere s&#299;v&#299; situm', '&#229; la v&#230;re, &#229; la komme', 1, 10], ['decet dec&#275;re decu&#299;t', 'det er passende (+ acc. +inf.)', 1, 10], ['effund&#333; -fundere -f&#363;d&#299; -f&#363;sum', '&#229; &#248;se ut', 1, 10], ['pr&#333;mitt&#333; -mittere -m&#299;s&#299; -missum', '&#229; la g&#229; frem, &#229; love', 1, 10], ['fing&#333; fingere f&#299;nx&#299; f&#299;ctum', '&#229; danne, &#229; forme', 1, 10], ['respicio -ere -sp&#275;x&#299; -spectum', '&#229; se tilbake', 1, 10], ['imper&#257;tor -&#333;ris m.', 'kommand&#248;r', 2, 10], ['vac&#333; vac&#257;re', '&#229; v&#230;re tom', 1, 10], ['color -&#333;ris m.', 'farge', 2, 10], ['disc&#275;d&#333; -ere -cess&#299; -cessum', '&#229; g&#229; bort', 1, 10], ['gaudium -&#299; n.', 'glede', 2, 10], ['caecus -a -um', 'blind; m&#248;rk, skjult', 8, 10], ['libet lib&#275;re libuit or libitum est', 'det behager (+ dat. + infin.)', 1, 10], ['centum', 'hundre', 4, 10], ['c&#333;nst&#333; -st&#257;re -stit&#299;', '&#229; st&#229; stille; &#229; v&#230;re inntr&#229;dt; &#229; forbli', 1, 10], ['lingua -ae f.', 'tunge, spr&#229;k', 2, 10], ['multit&#363;d&#333; -inis f.', 'mengde, antall', 2, 10], ['aeternus -a -um', 'evig', 8, 10], ['circ&#257;', 'omkring (+ acc.)', 5, 10], ['&#333;r&#257;ti&#333; -&#333;nis f.', 'tale, utsagn', 2, 10], ['potest&#257;s -&#257;tis f.', 'makt', 2, 10], ['tardus -a -um', 'langsom, sl&#248;v', 8, 10], ['for f&#257;r&#299; f&#257;tus sum', '&#229; tale', 1, 10], ['humus -&#299; f.', 'jord', 2, 10], ['testis -is m.', 'vitne', 2, 10], ['&#299;nfer&#333; &#299;nferre intul&#299; ill&#257;tum', '&#229; bringe inn; innf&#248;re', 1, 10], ['c&#363;r&#333; -&#257;re', '&#229; dra omsorg for; &#229; pleie', 1, 10], ['aes aeris n.', 'kobber, bronse; penger', 2, 10], ['celer -is -e', 'hurtig', 8, 10], ['pr&#333;c&#275;d&#333; -c&#275;dere -cess&#299; -cessum', '&#229; g&#229; frem', 1, 10], ['m&#275;nsa -ae f.', 'bord', 2, 10], ['pius -a -um', 'from, gudfrygtig; kj&#230;rlig', 8, 10], ['i&#363;dicium -&#299; n.', 'retssak, dom', 2, 10], ['vict&#333;ria -ae f.', 'seier', 2, 10], ['damn&#333; -&#257;re', '&#229; ford&#248;mme', 1, 10], ['r&#257;rus -a -um', 'tynn, adskilt; sjelden', 8, 10], ['tempestas -t&#257;tis f.', 'tidspunkt; v&#230;r, storm', 2, 11], ['im&#257;g&#333; -inis f.', 'bilde, figur', 2, 11], ['&#333;r&#333; -&#257;re', '&#229; be', 1, 11], ['praeter', 'forbi, frem for, uten (+acc)', 5, 11], ['c&#333;nsul&#333; -sulere -sulu&#299; -sultum', '&#229; r&#229;dsp&#248;rre; &#229; beslutte', 1, 11], ['iterum', 'igjen', 7, 11], ['porta -ae f.', 'port', 2, 11], ['intersum -esse -fu&#299;', '&#229; v&#230;re imellom, &#229; v&#230;re til stede', 1, 11], ['lib&#299;d&#333; -inis f.', 'lidenskap, lyst', 2, 11], ['sustine&#333; sustin&#275;re sustinu&#299; sustentum', '&#229; oppretholde', 1, 11], ['aliquand&#333;', 'engang; engang imellom', 7, 11], ['reperi&#333; -per&#299;re -pper&#299; -pertum', '&#229; finne', 1, 11], ['intr&#333; -&#257;re', '&#229; tre inn', 1, 11], ['piet&#257;s -t&#257;tis f.', 'fromhet, plikt', 2, 11], ['barbarus -&#299; m.', 'barbar, fremmed', 2, 11], ['culpa -ae f.', 'skyld, feil', 2, 11], ['i&#363;stus -a -um', 'rettferdig', 8, 11], ['d&#333;nec', 'inntil', 6, 11], ['flu&#333; fluere flux&#299; fluxum', '&#229; flyte', 1, 11], ['necesse (indecl. adj.)', 'n&#248;dvendig', 8, 11], ['reor r&#275;r&#299; r&#257;tus sum', '&#229; mene', 1, 11], ['tenebrae -br&#257;rum f. pl.', 'm&#248;rke', 2, 11], ['saeculum -&#299; n.', 'slekt, menneskealder, tidsalder; &#229;rhundre', 2, 11], ['d&#299;mitt&#333; -mittere -m&#299;s&#299; -missum', '&#229; sende bort', 1, 11], ['licet', 'selvom', 6, 11], ['cinis cineris m./f.', 'aske', 2, 11], ['c&#333;nsist&#333; -sistere -stit&#299;', '&#229; stille seg, &#229; stanse; &#229; best&#229; av', 1, 11], ['rec&#275;ns -ntis', 'ny, frisk', 8, 11], ['aliter', 'p&#229; annet vis', 7, 11], ['laed&#333; laedere laes&#299; laesum', '&#229; skade', 1, 11], ['prob&#333; -&#257;re', '&#229; pr&#248;ve; &#229; godkjenne', 1, 11], ['dole&#333; -&#275;re dolu&#299;', '&#229; f&#248;le smerte, &#229; s&#248;rge', 1, 11], ['qu&#257;r&#275;', 'hvordan? hvorfor?', 7, 11], ['antequam', 'f&#248;r', 6, 11], ['reliquus -a -um', 'som er tilbake', 8, 11], ['semel', 'en gang', 7, 11], ['&#333;d&#299; &#333;disse', '&#229; hate', 1, 11], ['s&#299;cut', 'likesom', 7, 11], ['pecc&#333; -&#257;re', '&#229; synde', 1, 11], ['s&#275;nsus -&#363;s m.', 'sans, f&#248;lelse', 2, 11], ['exsilium -&#299; n.', 'eksil', 2, 11], ['cor cordis n.', 'hjerte', 2, 11], ['d&#275;nique', 'til sist', 7, 11], ['sapientia -ae f.', 'visdom', 2, 11], ['statim', 'straks', 7, 11], ['accid&#333; -cidere -cid&#299;', '&#229; falle, &#229; hende', 1, 11], ['d&#275;cern&#333; -cernere -cr&#275;v&#299; -cr&#275;tum', '&#229; avgj&#248;re', 1, 11], ['occ&#299;d&#333; -c&#299;dere -c&#299;d&#299; -c&#299;sum', '&#229; drepe', 1, 11], ['d&#275;scend&#333; -scendere -scend&#299; -sc&#275;nsum', '&#229; stige ned', 1, 11], ['hiems hiemis f.', 'vinter', 2, 11], ['contine&#333; -tin&#275;re -tinu&#299; -tentum', '&#229; holde sammen, &#229; omslutte; &#229; holde tilbake', 1, 11], ['d&#275;fer&#333; -ferre -tul&#299; -l&#257;tum', '&#229; b&#230;re ned; &#229; overdra', 1, 11], ['oportet -&#275;re -uit', 'det er n&#248;dvendig (+acc. + inf.)', 1, 11], ['trib&#363;nus -&#299; m.', 'tribune', 2, 11], ['b&#333;s bovis m.', 'okse', 2, 11], ['&#299;r&#257;scor &#299;r&#257;sc&#299; &#299;r&#257;tus sum', '&#229; bli vred', 1, 11], ['aeger aegra aegrum', 'syk', 8, 11], ['forum -&#299; n.', 'markedsplass, forum', 2, 11], ['offer&#333; offerre obtul&#299; obl&#257;tum', '&#229; b&#230;re frem, &#229; tilby', 1, 11], ['revoc&#333; -&#257;re', '&#229; kalle tilbake', 1, 11], ['cing&#333; cingere c&#299;nx&#299; c&#299;nctum', '&#229; omslutte, &#229; omgjorde', 1, 11], ['integer -gra -grum:', 'ur&#248;rt, frisk, hel', 8, 11], ['validus -a -um', 'sterk', 8, 11], ['al&#333; alere alu&#299; alitum', '&#229; n&#230;re, &#229; f&#248;', 1, 11], ['fl&#333;s fl&#333;ris m.', 'blomst', 2, 11], ['&#299;ctus -&#363;s m.', 'slag, st&#248;t', 2, 11], ['collig&#333; -ere -l&#275;g&#299; -l&#275;ctum', '&#229; samle', 1, 11], ['perg&#333; pergere perr&#275;x&#299; perr&#275;ctum', '&#229; styre; &#229; fortsette', 1, 11], ['praes&#275;ns -ntis', 'n&#230;rv&#230;rende, n&#229;v&#230;rende', 8, 11], ['r&#275;ctus -a -um', 'rett, bein (eg.: styrt)', 8, 11], ['l&#257;tus -a -um', 'bred', 8, 11], ['praeceptum -&#299; n.', 'bud, befaling', 2, 11], ['rec&#275;d&#333; -c&#275;dere -cess&#299; -cessum', '&#229; g&#229; tilbake, &#229; forlate', 1, 11], ['utrum', 'om (interr.); utrum ... an: enten... eller', 6, 11], ['fam&#275;s -is f.', 'sult; hungersn&#248;d', 2, 11], ['pari&#333; parere peper&#299; partum', '&#229; f&#248;de; &#229; tilveiebringe', 1, 12], ['app&#257;re&#333; -&#275;re -u&#299;', '&#229; komme til syne', 1, 12], ['qu&#333;modo', 'p&#229; hvilken m&#229;te? hvordan?', 6, 12], ['error -&#333;ris m.', 'villfarelse, omstreifing', 2, 12], ['forsitan, fortasse', 'kanskje', 7, 12], ['convert&#333; -vertere -vert&#299; -versum', '&#229; vende, &#229; dreie', 1, 12], ['profic&#299;scor -fic&#299;sc&#299; -fectus sum', '&#229; begi seg avsted', 1, 12], ['secundus -a -um', 'f&#248;lgende; annen', 8, 12], ['aperi&#333; aper&#299;re aperu&#299; apertum', '&#229; &#229;pne', 1, 12], ['castus -a -um', 'ren; from, innviet', 8, 12], ['i&#363;dex i&#363;dicis m.', 'dommer', 2, 12], ['lapis lapidis m.', 'stein', 2, 12], ['nimis or nimium', 'alt for meget, i h&#248;y grad', 7, 12], ['onus oneris n.', 'byrde', 2, 12], ['opera -ae f.', 'arbeide, verk', 2, 12], ['pauper -eris', 'fattig', 8, 12], ['&#257;&#275;r &#257;eris m.', 'luft', 2, 12], ['neg&#333;tium -&#299; n.', 'arbeid, beskjeftigelse', 2, 12], ['p&#257;re&#333; p&#257;r&#275;re p&#257;ru&#299;', '&#229; adlyde', 1, 12], ['subit&#333;', 'plutselig', 7, 12], ['argentum -&#299; n.', 's&#248;lv, penge', 2, 12], ['&#363;tilis -e', 'nyttig', 8, 12], ['aeth&#275;r aetheris n.', '&#248;vre luft, himmelen', 2, 12], ['mere&#333; mer&#275;re meru&#299; meritum', '&#229; fortjene', 1, 12], ['port&#333; -&#257;re', '&#229; b&#230;re', 1, 12], ['proprius -a -um', 'egen, s&#230;rlig', 8, 12], ['avis -is f.', 'fugl', 2, 12], ['vanus -a -um', 'tom; falsk', 8, 12], ['m&#257;teria -ae f.', 'materiale, stoff; &#229;rsak', 2, 12], ['pauc&#299; -ae -a', 'f&#229;', 8, 12], ['volunt&#257;s -&#257;tis f.', 'vilje, &#248;nske', 2, 12], ['&#275;gregius -a -um', 'utmerket', 8, 12], ['difficilis -e', 'vanskelig', 8, 12], ['gladius -&#299; m.', 'sverd', 2, 12], ['cibus -&#299; m.', 'mat', 2, 12], ['cert&#333; -&#257;re', '&#229; kappes', 1, 12], ['initium -&#299; n.:', 'begynnelse', 2, 12], ['pertine&#333; -tin&#275;re -tinu&#299;', '&#229; strekke seg, &#229; vedkomme', 1, 12], ['quattuor', 'fire', 4, 12], ['turb&#333; -&#257;re', '&#229; forstyrre, &#229; forvirre', 1, 12], ['c&#333;ns&#363;m&#333; -s&#363;mere -s&#363;mps&#299; -s&#363;mptum', '&#229; bruke; &#229; fort&#230;re', 1, 12], ['corrump&#333; -rumpere -r&#363;p&#299; -ruptum', '&#229; &#248;delegge, &#229; forderve', 1, 12], ['incid&#333; incidere incid&#299;', '&#229; falle; &#229; inntreffe', 1, 12], ['paul&#333;, paulum', 'litt', 7, 12], ['hospes hospitis m.', 'fremmed, gjest', 2, 12], ['r&#299;de&#333; -&#275;re r&#299;s&#299; r&#299;sum', '&#229; smile, &#229; le', 1, 12], ['aevum -i n.', 'evighet, alder, liv', 2, 12], ['aud&#257;x aud&#257;cis', 'dristig', 8, 12], ['posterus -a -um', 'neste, senere', 8, 12], ['praetor -&#333;ris m.', 'anf&#248;rer, pretor, stattholder', 2, 12], ['r&#363;s r&#363;ris n.', 'land', 2, 12], ['differ&#333; differre distul&#299; d&#299;l&#257;tum', '&#229; adskille, &#229; spre; &#229; utsette', 1, 12], ['v&#299;t&#333; -&#257;re', '&#229; unng&#229;', 1, 12], ['pr&#299;v&#257;tus -a -um', 'privat', 8, 12], ['servi&#333; -&#299;re', '&#229; v&#230;re slave, &#229; tjene', 1, 12], ['vereor ver&#275;r&#299; veritus sum', '&#229; skamme seg for; &#229; &#230;re, &#229; frykte', 1, 12], ['ingredior -gred&#299; -gressus sum:', '&#229; tre inn', 1, 12], ['add&#363;c&#333; -ere -d&#363;x&#299; -ductum', '&#229; f&#248;re til', 1, 12], ['hortor hort&#257;r&#299; hort&#257;tus sum', '&#229; oppmuntre', 1, 12], ['reus -&#299; m.', 'anklaget', 2, 12], ['sc&#299;licet', 'naturligvis, nemlig; ganske visst', 7, 12], ['compar&#333; -&#257;re', '&#229; forbinde; &#229; sammenligne', 1, 12], ['perpetuus -a -um', 'ubrutt', 8, 12], ['d&#275;s&#299;der&#333; -&#257;re', '&#229; lengte etter, &#229; begj&#230;re', 1, 12], ['celebr&#333; -&#257;re', '&#229; bes&#248;ke i mengde, feire; &#229; bekjentgj&#248;re', 1, 12], ['c&#333;nfici&#333; -ficere -f&#275;c&#299; -fectum', '&#229; gj&#248;re ferdig; &#229; drepe', 1, 12], ['intend&#333; -tendere -tend&#299; -tentum:', '&#229; spenne, &#229; strekke', 1, 12], ['i&#363;r&#333; -&#257;re', '&#229; sverge', 1, 12], ['s&#333;lum', 'kun, blott', 7, 12], ['auct&#333;rit&#257;s -&#257;tis f.', 'eksempel, mening, innflytelse, myndighet', 2, 12], ['iaci&#333; iacere i&#275;c&#299; iactum', '&#229; kaste', 1, 12], ['lab&#333;r&#333; -&#257;re', '&#229; arbeide', 1, 12], ['liber libr&#299; m.', 'bok', 2, 12], ['l&#363;na -ae f.', 'm&#229;ne', 2, 12], ['pr&#333;tinus', 'fremad; straks', 7, 12], ['aequ&#275;', 'likt; jevnt, rettferdig', 7, 13], ['c&#333;nor c&#333;n&#257;r&#299; c&#333;n&#257;tus sum', '&#229; fors&#248;ke', 1, 13], ['cup&#299;d&#333; -inis f.', 'begj&#230;r', 2, 13], ['fer&#275;', 'nesten', 7, 13], ['&#299;nsula -ae f.:', '&#248;y', 2, 13], ['f&#299;lia -ae f.; f&#299;lius -&#299; m.', 'datter; s&#248;nn', 2, 13], ['narr&#333; -&#257;re', '&#229; berette', 1, 13], ['necessit&#257;s -t&#257;tis f.', 'n&#248;dvendighet', 2, 13], ['&#275;gredior &#275;gred&#299; &#275;gressus sum', '&#229; g&#229; ut', 1, 13], ['po&#275;ta -ae m.', 'dikter', 2, 13], ['decem', 'ti', 4, 13], ['amplus -a -um', 'stor, h&#248;y', 8, 13], ['aptus -a -um', 'passende; f&#248;yet til', 8, 13], ['c&#333;nsequor -sequ&#299; -sec&#363;tus sum', '&#229; f&#248;lge med, &#229; komme etter; &#229; oppn&#229;', 1, 13], ['frequ&#275;ns -ntis', 'hyppig; tallrik', 8, 13], ['n&#363;ntius -&#299; m.', 'sendebud; budskap', 2, 13], ['cond&#299;ci&#333; -&#333;nis f.', 'avtale', 2, 13], ['conv&#299;vium -i&#299; n.', 'gjestebud', 2, 13], ['foedus -a -um', 'stygg', 8, 13], ['fruor fru&#299; fr&#363;ctus sum', '&#229; nyte', 1, 13], ['num', 'mon (interr. partikel, som forventer negativt svar)', 7, 13], ['albus -a -um', 'hvit', 8, 13], ['damnum -&#299; n.', 'skade', 2, 13], ['fr&#363;ctus -&#363;s m.', 'frukt, nytelse', 2, 13], ['c&#275;nse&#333; c&#275;ns&#275;re c&#275;nsu&#299; c&#275;nsum', '&#229; vurdere, &#229; bed&#248;mme', 1, 13], ['pr&#333;d&#333; pr&#333;dere pr&#333;did&#299; pr&#333;ditum', '&#229; sette frem; &#229; overlevere', 1, 13], ['pr&#333;p&#333;n&#333; -p&#333;nere -posu&#299; -positum', '&#229; stille frem; &#229; beslutte', 1, 13], ['&#299;nstitu&#333; -stituere -stitu&#299; -stit&#363;tum:', '&#229; oppstille, &#229; oppf&#248;re; &#229; forordne', 1, 13], ['item', 'p&#229; samme m&#229;te', 7, 13], ['magister magistr&#299; m.', 'forstander, leder; l&#230;rer', 2, 13], ['stella -ae f.', 'stjerne', 2, 13], ['&#275;d&#363;c&#333; -d&#363;cere -d&#363;x&#299; -ductum', '&#229; f&#248;re ut; &#229; oppfostre', 1, 13], ['fr&#363;mentum -&#299; n.', 'korn', 2, 13], ['suscipi&#333; -cipere -c&#275;p&#299; ceptum', '&#229; ta opp; &#229; p&#229;ta seg', 1, 13], ['quasi', 'som om', 7, 13], ['sacerd&#333;s -d&#333;tis m./f.', 'prest, prestinne', 2, 13], ['v&#299;c&#299;nus -a -um', 'n&#230;rliggende, nabo, neste', 8, 13], ['cave&#333; cav&#275;re c&#257;v&#299; cautum', '&#229; ta i akt, &#229; v&#230;re forsiktig', 1, 13], ['&#275;lig&#333; &#275;ligere &#275;l&#275;g&#299; &#275;l&#275;ctum', '&#229; utvelge', 1, 13], ['familia -ae f.', 'familie', 2, 13], ['paene', 'nesten', 7, 13], ['praecipi&#333; -cipere -c&#275;p&#299; -ceptum', '&#229; ta i forveien, &#229; foreskrive, &#229; befale', 1, 13], ['s&#257;nus -a -um', 'sunn', 8, 13], ['potis -e', 'i stand til', 8, 13], ['pr&#299;ncipium -&#299; n.', 'begynnelse', 2, 13], ['sepulcrum -&#299; n.', 'grav, gravsted', 2, 13], ['mort&#257;lis -e', 'd&#248;delig', 8, 13], ['epistula -ae f.', 'brev', 2, 13], ['inim&#299;cus -a -um:', 'uvennlig, fiendtlig', 8, 13], ['interrog&#333; -&#257;re', '&#229; sp&#248;rre', 1, 13], ['c&#333;nsu&#275;t&#363;do -inis f.', 'vane, skikk', 2, 13], ['ill&#363;c', 'dit, til det sted', 7, 13], ['d&#299;gnit&#257;s -&#257;tis f.', 'verdighet, &#230;re', 2, 13], ['fug&#333; -&#257;re', '&#229; drive p&#229; flukt', 1, 13], ['affici&#333; -ficere -f&#275;c&#299; -fectum', '&#229; p&#229;virke', 1, 13], ['adhibe&#333; -hib&#275;re -hibu&#299; -hibitum', '&#229; bringe hen til', 1, 13], ['caelestis -e', 'himmelsk', 8, 13], ['mulier -eris f.', 'kvinne', 2, 13], ['d&#299;vus -a -um', 'guddommelig', 8, 13], ['arbitror arbitr&#257;r&#299; arbitr&#257;tus sum', '&#229; iaktta', 1, 13], ['poste&#257;', 'deretter', 7, 13], ['aed&#275;s -is f.', 'bygning, hus', 2, 13], ['f&#257;bula -ae f.', 'folks snakk; fortelling, eventyr', 2, 13], ['celeriter', 'hurtig', 7, 13], ['pl&#275;rus- pl&#275;ra- pl&#275;rumque', 'flest, riktig mange', 8, 13], ['qui&#275;sc&#333; qui&#275;scere qui&#275;v&#299; qui&#275;tum', '&#229; hvile, &#229; sove; &#229; holde seg i ro', 1, 13], ['quoti&#275;ns', 'interr. hvor mange gange? rel. s&#229; mange gange', 7, 13], ['scientia -ae f.', 'viten, kjennskap', 2, 13], ['c&#333;nfiteor c&#333;nfit&#275;r&#299; c&#333;nfessus sum', '&#229; innr&#248;mme, &#229; bekjenne; &#229; avsl&#248;re', 1, 13], ['d&#299;lig&#333; -ligere -l&#275;x&#299; -l&#275;ctum', '&#229; elske, &#229; sette pris p&#229;', 1, 13], ['pl&#275;rumque', 'for det meste', 7, 13], ['dormi&#333; -&#299;re', '&#229; sove', 1, 13], ['volucris -is f./m.', 'fugl', 2, 13], ['volucer -cris -cre', 'flyvende, bevinget', 8, 13], ['cre&#333; -&#257;re', '&#229; skape; &#229; utnevne til', 1, 13], ['fid&#275;lis -e', 'trofast', 8, 14], ['indic&#333; -&#257;re', '&#229; utpeke, &#229; bekjentgj&#248;re', 1, 14], ['hodi&#275;', 'i dag', 7, 14], ['discipl&#299;na -ae f.', 'undervisning, l&#230;re; tukt', 2, 14], ['v&#275;r&#275;', 'i sannhet', 7, 14], ['aegr&#275;', 'neppe', 7, 14], ['advert&#333; -vertere -vert&#299; -versum', '&#229; vende hen til', 1, 14], ['adveni&#333; -&#299;re -v&#275;n&#299; -ventum', '&#229; komme til', 1, 14], ['pend&#333; pendere pepend&#299; p&#275;nsum', '&#229; veie, &#229; betale', 1, 14], ['stude&#333; -&#275;re -u&#299;', '&#229; strebe etter, &#229; studere', 1, 14], ['ascend&#333; -ere -scend&#299; -sc&#275;nsum', '&#229; stige opp', 1, 14], ['vulg&#333;', 'i alminnelighet', 7, 14], ['breviter', 'kort', 7, 14], ['fors fortis f.', 'tilfelle', 2, 14], ['f&#275;l&#299;citer', 'heldigvis, lykkeligvis', 7, 14], ['revert&#333; -vertere -vert&#299;', '&#229; vende tilbake', 1, 14], ['&#275;d&#299;c&#333; -d&#299;cere -d&#299;x&#299; -dictum', '&#229; bekjentgj&#248;re, &#229; forkynne', 1, 14], ['mundus -a -um', 'ren', 8, 14], ['','',0,1000]]
+
+var ordlisteLengde = ordliste.length
+
+// Hjem
+function hjem() {
+	document.getElementById("overskrift").innerHTML = "<h2>Velkommen!</h2>";	
+	document.getElementById("innhold").innerHTML = "<p>Vennligst velg en metode for glosepugging.</p><p><b>Kort om de forskjellige funksjonene:</b><br><i>Quiz</i> genererer en multiple-choice-test av de glosene du velger. Du kan enten velge en ferdig liste med ett klikk, eller sette sammen ditt eget utvalg av ord basert p&aring; leksjon og ordklasser og velge hvor mange oppgaver og alternativer som skal generereres.</p><p>De to andre funksjonene er laget med utgangspunkt i hvordan man kan bruke flashcards. Det gis ingen alternativer, og du vurderer selv om du har greid oppgaven eller ikke. Programmet holder styr p&aring; kortene for deg, og s&oslash;rger for en riktig progresjon. Begge disse funksjonene krever at browseren din st&oslash;tter s&aring;kalt Web storage, som kan huske hvor langt du har kommet.</p><p><i>Poeng</i> bruker et poengsystem, hvor hvert enkelt ord har en poengsum som starter p&aring; 50. N&aring;r du svarer feil mister du 15 poeng, n&aring;r du svarer rett f&aring;r du 10 poeng, og hvis du oppgir at du ikke vet svaret mister du 5 poeng. N&aring;r et ord har n&aring;dd 100 poeng tas det ut av &oslash;vingene, men det kan n&aring;r som helst dukke opp igjen som en tilfeldig repetisjon. N&aring;r du starter denne funksjonen settes det sammen en &oslash;kt best&aring;ende av 30 ord. Denne funksjonen egner seg godt til &aring; brukes over lengre tid, en gang eller to om dagen.</p><p><i>Tid</i> egner seg bedre til intensiv glosepugging. Du kan se for deg at glosekortene ligger i opp til 11 forskjellige bunker. I den f&oslash;rste bunken m&aring; de ligge i minst fem sekunder f&oslash;r du ser dem igjen, i den neste i 25 sekunder, i den neste i to minutter, og s&aring; videre, helt opp til den siste bunken hvor de ikke repeteres f&oslash;r om to &aring;r. Hver gang man svarer riktig flyttes kortet videre til neste bunke, men dersom man svarer feil g&aring;r kortet tilbake til f&oslash;rste bunke. N&aring;r ingen kort er klare til repetisjon, tar man et nytt kort fra boksen, ser p&aring; det, og legger det i f&oslash;rste bunke. Denne metoden sikrer at glosene m&aring; huskes en viss tid f&oslash;r programmet regner med at du kan dem. Dersom man bruker funksjonen <i>Poeng</i> veldig hyppig, vil en glose kunne oppn&aring; 100 poeng p&aring; noen timer, uten at man husker den neste dag. Hvis man derimot bruker <i>Tid</i> mye, vil tidsintervallene v&aelig;re faste, og man vil heller jobbe med flere ord samtidig.</p>";
+}
+
+// Generelle funksjoner
+function tilfeldigeUlike(utvalgslista,lengden){
+	var x=Math.floor(Math.random()*utvalgslista.length);
+	if (lengden>1){
+		var listeutentilfeldig=[];
+		for (var y = 0; y<utvalgslista.length; y++){
+			if (y!=x){
+			listeutentilfeldig.push(utvalgslista[y]);
+			}
+		}
+		var restenavlista=tilfeldigeUlike(listeutentilfeldig,lengden-1);
+		restenavlista.push(utvalgslista[x]);
+		return restenavlista;
+	}
+	else {
+		return [utvalgslista[x]];
+	}
+}
+
+function velgOptionMedVerdi(element,verdi){
+	for (var i=0; i < element.options.length; i++){
+		if(element.options[i].value == verdi){
+        	element.selectedIndex = i;
+        }
+    }
+}
+
+// Glosequiz
+function glosequizSetup() {
+
+	//Deaktiver eventuelle snarveier
+	document.removeEventListener('keypress', visGloseSnarveier);
+	
+	document.getElementById("overskrift").innerHTML = "<h2>Glosequiz</h2>";
+	document.getElementById("innhold").innerHTML = "<div class=\"halv\">\
+	<p><b>Leksjoner med 75 ord:</b></p>\
+	<button type=\"button\" onclick=\"glosequizStarter(1,1,1,1,1,1,1,1,1,1,5,0,0);\">Liste 1</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(2,2,1,1,1,1,1,1,1,1,5,0,0);\">Liste 2</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(3,3,1,1,1,1,1,1,1,1,5,0,0);\">Liste 3</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(4,4,1,1,1,1,1,1,1,1,5,0,0);\">Liste 4</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(5,5,1,1,1,1,1,1,1,1,5,0,0);\">Liste 5</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(6,6,1,1,1,1,1,1,1,1,5,0,0);\">Liste 6</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(7,7,1,1,1,1,1,1,1,1,5,0,0);\">Liste 7</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(8,8,1,1,1,1,1,1,1,1,5,0,0);\">Liste 8</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(9,9,1,1,1,1,1,1,1,1,5,0,0);\">Liste 9</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(10,10,1,1,1,1,1,1,1,1,5,0,0);\">Liste 10</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(11,11,1,1,1,1,1,1,1,1,5,0,0);\">Liste 11</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(12,12,1,1,1,1,1,1,1,1,5,0,0);\">Liste 12</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(13,13,1,1,1,1,1,1,1,1,5,0,0);\">Liste 13</button>\
+	<button type=\"button\" onclick=\"glosequizStarter(14,14,1,1,1,1,1,1,1,1,5,0,0);\">Liste 14</button>\
+	<p> Det gis 5 alternativer pr sp&oslash;rsm&aring;l<br>Oversettelse: Latin til norsk<br>Alle ord i listen testes\
+	</p>\
+	</div>\
+	<div class=\"resten\">\
+	<p><b>Avansert:</b><form oninput=\"antallpreview();\">\
+	Ord som forekommer fra leksjon<input type=\"number\" id=\"frainput\" min=1 max=14 value=1>\
+	til<input type=\"number\" id=\"tilinput\" min=1 max=114 value=14>, \
+	inkludert ordklassene:<br>\
+	<input type=\"checkbox\" id=\"verbinput\" checked onclick=\"antallpreview()\">Verb<br>\
+	<input type=\"checkbox\" id=\"subsinput\" checked onclick=\"antallpreview()\">Substantiver<br>\
+	<input type=\"checkbox\" id=\"adjinput\" checked onclick=\"antallpreview()\">Adjektiver<br>\
+	<input type=\"checkbox\" id=\"proninput\" checked onclick=\"antallpreview()\">Pronomen<br>\
+	<input type=\"checkbox\" id=\"tallinput\" checked onclick=\"antallpreview()\">Tallord<br>\
+	<input type=\"checkbox\" id=\"prepinput\" checked onclick=\"antallpreview()\">Preposisjoner<br>\
+	<input type=\"checkbox\" id=\"konjinput\" checked onclick=\"antallpreview()\">Konjunksjoner<br>\
+	<input type=\"checkbox\" id=\"advinput\" checked onclick=\"antallpreview()\">Adverb<br>\
+	<br>(<b><span id=\"forelopigeord\">0</span></b> ord kjenner seg truffet.)<br><br>\
+	<select id=\"antallalternativer\">\
+	<option value=3>3</option>\
+	<option value=5 selected>5</option>\
+	<option value=10>10</option>\
+	</select> alternativer pr sp&oslash;rsm&aring;l<br>\
+	<select id=\"reversretning\">\
+	<option value=0>Latin-norsk</option>\
+	<option value=1>Norsk-latin</option>\
+	</select><br>\
+	<select id=\"antallsporsmal\">\
+	<option value=10>Maks 10</option>\
+	<option value=20 selected>Maks 20</option>\
+	<option value=50 selected>Maks 50</option>\
+	<option value=0>Alle</option>\
+	</select> oppgaver<br><br>\
+	</form>\
+	<button type=\"button\" id=\"kjorquiz\" onclick=\"innholdssjekk()\">Kj&oslash;r!</button></p>\
+	</div>\
+	<br style=\"clear: left;\" />";
+	antallpreview();
+}
+
+function innholdssjekk (){
+	if (document.getElementById("forelopigeord").innerHTML == "0"){
+		window.alert("Det er ingen ord i gjeldende utvalg");
+	}
+	else {
+		glosequizStarter(document.getElementById("frainput").value,document.getElementById("tilinput").value,document.getElementById("verbinput").checked,document.getElementById("subsinput").checked,document.getElementById("proninput").checked,document.getElementById("tallinput").checked,document.getElementById("prepinput").checked,document.getElementById("adjinput").checked,document.getElementById("advinput").checked,document.getElementById("konjinput").checked,document.getElementById("antallalternativer").value,document.getElementById("reversretning").value,document.getElementById("antallsporsmal").value);
+	}
+}
+
+function antallpreview (){
+	var telling=0;
+	var x=-1;
+	var i=0;
+	var til=parseInt(document.getElementById("tilinput").value);
+	var fra=parseInt(document.getElementById("frainput").value);
+
+	if (isNaN(til)){
+		til=1
+	}
+	if (isNaN(fra)){
+		fra=1
+	}
+	if (fra<1){
+		fra=1;
+	}
+	if (til<1){
+		til=1;
+	}
+
+	if (fra<til){
+		var midlertidig=til;
+		til=fra;
+		fra=midlertidig;
+	}
+
+	//Definer et startpunkt, x, ved aa telle ovenfra
+	while (x==-1 && i<ordliste.length){
+		if (ordliste[i][3]>=til){
+			x=i;
+		}
+		i+=1;
+	}
+	var sjekkliste=[];
+	if (document.getElementById("verbinput").checked){
+		sjekkliste.push(1);
+	}
+	if (document.getElementById("subsinput").checked){
+		sjekkliste.push(2);
+	}
+	if (document.getElementById("proninput").checked){
+		sjekkliste.push(3);
+	}
+	if (document.getElementById("tallinput").checked){
+		sjekkliste.push(4);
+	}
+	if (document.getElementById("prepinput").checked){
+		sjekkliste.push(5);
+	}
+	if (document.getElementById("adjinput").checked){
+		sjekkliste.push(6);
+	}
+	if (document.getElementById("advinput").checked){
+		sjekkliste.push(7);
+	}
+	if (document.getElementById("konjinput").checked){
+		sjekkliste.push(8);
+	}
+	
+	//Sjekk alle ord fra x nedover til fra-grense
+	while (ordliste[x][3]<=fra){
+		
+		if (sjekkliste.indexOf(ordliste[x][2])!==-1){
+			telling+=1;
+		}
+		x +=1;
+		//console.log([x,ordliste[x],ordliste[x][3],ordliste[x][3]>=fra]);
+	}
+	document.getElementById("forelopigeord").innerHTML =  telling;
+}
+
+function glosequizStarter (raw_fra,raw_til,vb,subs,pron,tall,prep,adj,adv,konj,alt,rev,opg) {
+
+	//Sett globale innstillinger
+	revers=rev;
+	alternativer=alt;
+	poengsum = 0;
+
+	//Soerg for at til er stoerre enn fra, og at fra ikke er for liten
+	var til=parseInt(raw_til);
+	var fra=parseInt(raw_fra);
+	if (isNaN(til)){
+		til=1
+	}
+	if (isNaN(fra)){
+		fra=1
+	}
+	if (fra<1){
+		fra=1;
+	}
+	if (til<1){
+		til=1;
+	}
+	if (fra<til){
+		var midlertidig=til;
+		til=fra;
+		fra=midlertidig;
+	}
+	
+	//Finn starten paa utvalget
+	var x=-1;
+	var i=0;
+	while (x==-1){
+		if (ordliste[i][3]>=til){
+			x=i;
+		}
+		i+=1;
+	}
+	
+	//Definer hvilke ordklasseverdier (ordliste[x][2]) som er gyldige
+	var sjekkliste=[];
+	if (vb==1){
+		sjekkliste.push(1);
+	}
+	if (subs==1){
+		sjekkliste.push(2);
+	}
+	if (pron==1){
+		sjekkliste.push(3);
+	}
+	if (tall==1){
+		sjekkliste.push(4);
+	}
+	if (prep==1){
+		sjekkliste.push(5);
+	}
+	if (konj==1){
+		sjekkliste.push(6);
+	}
+	if (adv==1){
+		sjekkliste.push(7);
+	}
+	if (adj==1){
+		sjekkliste.push(8);
+	}
+
+	
+	//Kopier ord fra global ordliste til globalt utvalg
+	utvalg=[];
+	while (ordliste[x][3]<=fra){
+		if (sjekkliste.indexOf(ordliste[x][2])!==-1){
+			utvalg.push(ordliste[x]);
+		}
+		x +=1;
+	}
+	if (alternativer>utvalg.length){
+		alternativer=utvalg.length;
+	}
+	if (opg>utvalg.length){
+		opg=utvalg.length;
+	}
+	else if (opg==0){
+		opg=utvalg.length;
+	}
+	
+	//Generer global rekkefoelge for oppgaver
+	var tallListe=[];
+	var y=0;
+	while (y<utvalg.length){
+		tallListe.push(y);
+		y += 1;
+	}
+	tilfeldigTallListe = tilfeldigeUlike(tallListe,opg);
+	progresjon=0;
+	poengsum=0;
+
+	//Sett i gang foerste oppgave
+	glosequizNeste(0);
+}
+
+function glosequizNeste(poeng) {
+	
+	//Rydd
+	document.getElementById("innhold").innerHTML = "";
+	
+	//Oppdater poeng
+	poengsum = poengsum + poeng;
+	
+	//Finn gjeldende ord
+	var ordet = utvalg[tilfeldigTallListe[progresjon]][revers];
+	
+	//Generer gale alternativer
+	var tallListe=[];
+	var y=0;
+	while (y<utvalg.length){
+		if (y!=tilfeldigTallListe[progresjon]){
+			tallListe.push(y);
+		}
+		y+=1;
+	}
+	var galeAlternativer = tilfeldigeUlike(tallListe,alternativer-1);
+	
+	//Bygg opp teksten
+	var tekst=" ";
+	
+	//Tilbakemelding fra forrige spoersmaal
+	if (progresjon!=0){
+		if (poeng){
+			tekst+="<span class=\"riktig\">Riktig!</span><br>";
+		}
+		else {
+			tekst+="<span class=\"feil\">Feil! \""+utvalg[tilfeldigTallListe[progresjon-1]][revers]+"\" betyr &quot;"+utvalg[tilfeldigTallListe[progresjon-1]][1-revers]+"&quot;</span><br>";
+		}
+		tekst+="Du har "+poengsum+"/"+progresjon+" rette svar.<br><br>";
+	}
+	else {
+	tekst += "<br><br><br>";
+	}
+	
+	//Spoersmaal
+	tekst+="<span class=\"sporsmal\">Hva betyr <span class=\"glose\">&quot;"+ordet+"&quot;</span>?</span><br><br>";
+	
+	//Alternativer
+	var x=Math.floor(Math.random()*alternativer); //Tilfeldig plassering av rett alternativ
+	if (progresjon<tilfeldigTallListe.length-1){
+		for (var i = 0; i<alternativer; i++){
+			if (i==x){
+				tekst+="<button class=\"alternativ\" type=\"button\" onclick=\"glosequizNeste(1)\">"+utvalg[tilfeldigTallListe[progresjon]][1-revers]+"</button><br>";
+			}
+			else {
+				if (i<x){
+					tekst+="<button class=\"alternativ\" type=\"button\" onclick=\"glosequizNeste(0)\">"+utvalg[galeAlternativer[i]][1-revers]+"</button><br>";		
+				}
+				else {
+					tekst+="<button class=\"alternativ\" type=\"button\" onclick=\"glosequizNeste(0)\">"+utvalg[galeAlternativer[i-1]][1-revers]+"</button><br>";		
+				}
+			}
+		}
+	}
+	else {
+		for (i = 0; i<alternativer; i++){
+			if (i==x){
+				tekst+="<button class=\"alternativ\" type=\"button\" onclick=\"glosequizSlutt(1)\">"+utvalg[tilfeldigTallListe[progresjon]][1-revers]+"</button><br>";
+			}
+			else {
+				if (i<x){
+					tekst+="<button class=\"alternativ\" type=\"button\" onclick=\"glosequizSlutt(0)\">"+utvalg[galeAlternativer[i]][1-revers]+"</button><br>";		
+				}
+				else {
+					tekst+="<button class=\"alternativ\" type=\"button\" onclick=\"glosequizSlutt(0)\">"+utvalg[galeAlternativer[i-1]][1-revers]+"</button><br>";		
+				}
+			}
+		}
+	}
+	
+	
+	progresjon+=1;
+	document.getElementById("innhold").innerHTML = tekst;
+	
+}
+
+function glosequizSlutt(poeng) {
+	
+	//Rydd
+	document.getElementById("innhold").innerHTML = "";
+	
+	//Oppdater poeng
+	poengsum = poengsum + poeng;
+
+	//Bygg opp teksten
+	var tekst=" ";
+	
+	//Tilbakemelding fra forrige spoersmaal
+	if (poeng){
+		tekst+="<span class=\"riktig\">Riktig!</span><br>";
+	}
+	else {
+		tekst+="<span class=\"feil\">Feil! Rett svar er &quot;"+utvalg[tilfeldigTallListe[progresjon-1]][1-revers]+"&quot;</span><br>";
+	}
+	tekst+="Du fikk i alt "+poengsum+"/"+progresjon+" rette svar.<br><br>";
+
+
+	tekst += "<button type=\"button\" onclick=\"glosequizRestart()\">Om igjen!</button><br>";
+	tekst += "<button type=\"button\" onclick=\"glosequizSetup()\">Ny glosequiz</button><br>";
+	tekst += "<button type=\"button\" onclick=\"hjem()\">Avslutt</button><br>";
+
+	progresjon=0;
+	poengsum=0;
+	document.getElementById("innhold").innerHTML = tekst;	
+}
+
+function glosequizRestart () {
+
+	//Generer ny global rekkefoelge for oppgaver
+	var tallListe=[];
+	var y=0;
+	while (y<utvalg.length){
+		tallListe.push(y);
+		y += 1;
+	}
+	tilfeldigTallListe = tilfeldigeUlike(tallListe,tilfeldigTallListe.length);
+	
+	
+	glosequizNeste(0);
+}
+
+// Glosetrening
+function glosetreningSetup() {
+
+	//Deaktiver eventuelle snarveier
+	document.removeEventListener('keypress', visGloseSnarveier);
+	
+	document.getElementById("overskrift").innerHTML = "<h2>Poeng</h2>";
+	document.getElementById("innhold").innerHTML = "";
+	// Check browser support
+	if (typeof(Storage) !== "undefined") {
+		// Hvis funksjonen ikke er brukt foer, setter vi innstillingene til normal
+		if (!(localStorage.lat2GlosetreningLagret)){
+			localStorage.lat2GlosetreningLagret=JSON.stringify([30,10]);
+		}
+		glosetreningMidlertidig = JSON.parse(localStorage.lat2GlosetreningLagret);
+		
+		//finn ut hvilke gamle ord som kan vaere med
+		var gamleOrdPlasseringer = [];
+		
+		for (var x=innstillinger; x<glosetreningMidlertidig.length; x++) {
+			if (glosetreningMidlertidig[x]==100) {
+				gamleOrdPlasseringer.push(x-innstillinger);
+			}
+		}
+		
+		var antallGamleOrd = glosetreningMidlertidig[1];
+		if (glosetreningMidlertidig[1] > gamleOrdPlasseringer.length) {
+			antallGamleOrd = gamleOrdPlasseringer.length;
+		}
+		
+		//finn ut hvilke av de gamle ordene som faktisk blir med
+		var ordPlasseringer = [];
+		if (antallGamleOrd > 0) {
+			ordPlasseringer = tilfeldigeUlike(gamleOrdPlasseringer,antallGamleOrd);
+		}
+		
+		//fyll opp resten av plassen med nye ord
+		var y = innstillinger;
+		while (ordPlasseringer.length < glosetreningMidlertidig[0] && ordliste[y-2][3] != 0) {
+			if (y >= glosetreningMidlertidig.length) {
+				ordPlasseringer.push(y-innstillinger);
+				glosetreningMidlertidig.push(50);
+			} else if (glosetreningMidlertidig[y] < 100) {
+				ordPlasseringer.push(y-innstillinger);
+			}
+			y += 1;
+		}
+		
+		//lagre resultatet globalt
+		utvalg = ordPlasseringer;
+		
+		//lag tilfeldig rekkefoelge globalt
+		var tallListe=[];
+		var y=0;
+		while (y<utvalg.length){
+			tallListe.push(y);
+			y += 1;
+		}
+		tilfeldigTallListe = tilfeldigeUlike(tallListe,tallListe.length);
+		
+		//sett opp skallet
+		document.getElementById("innhold").innerHTML = "<p>\
+		Leksjon: <span id=\"treningFrekvens\">0</span>\
+		<span class=\"hoyre\">Score: <span id=\"treningScore\">0</span></span></p>\
+		<div id=\"treningFlashcard\"><div id=\"treningGlose\">Glose</div></div>\
+		<div id=\"treningKnapper\"><br>\
+		<button type=\"button\" id=\"treningVenstre\">Klar</button>\
+		<button type=\"button\" id=\"treningHoyre\">Vet ikke</button><br><br>\
+		<button type=\"button\" id=\"treningUnder\">Full kontroll!</button></div>\
+		<p>Ord igjen: <span id=\"treningIgjen\">0</span>\
+		<button type=\"button\" id=\"treningInnstillinger\">Innstillinger/Hjelp</button>"
+		
+		document.getElementById("treningInnstillinger").onclick = gloseTreningInnstillinger;
+		
+		//nullstill progresjon
+		progresjon = 0;
+		ordTilRep = [];
+		
+		gloseTreningGlose();
+
+	} else {
+    	document.getElementById("innhold").innerHTML = "Sorry, browseren din st&oslash;tter ikke web storage. Og da blir denne funksjonen litt ubrukelig...";
+	}
+}
+
+function gloseTreningGlose() {
+	
+	if (progresjon == utvalg.length) {
+		gloseTreningSlutt();
+	} else {
+	
+		//Sett opp tekst
+		document.getElementById("treningFrekvens").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][3];
+		document.getElementById("treningScore").innerHTML = glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger];
+		document.getElementById("treningGlose").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][0];
+		document.getElementById("treningVenstre").innerHTML = "Klar";
+		document.getElementById("treningHoyre").innerHTML = "Vet ikke";
+		document.getElementById("treningUnder").innerHTML = "Full kontroll";
+		document.getElementById("treningIgjen").innerHTML = utvalg.length-progresjon-1;
+	
+		//Gi knappene sine funksjoner
+		document.getElementById("treningVenstre").onclick = gloseTreningKlar;
+		document.getElementById("treningVenstre").disabled = false;
+		document.getElementById("treningHoyre").onclick = gloseTreningVetIkke;
+		document.getElementById("treningUnder").onclick = gloseTreningKontroll;
+		document.getElementById("treningUnder").disabled = false;
+		
+		
+	}
+}
+
+function gloseTreningKlar() {
+
+	//Sett opp tekst
+	document.getElementById("treningGlose").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][1];
+	document.getElementById("treningVenstre").innerHTML = "Riktig";
+	document.getElementById("treningHoyre").innerHTML = "Galt";
+
+	//Gi knappene sine funksjoner
+	document.getElementById("treningVenstre").onclick = gloseTreningGloseRiktig;
+	document.getElementById("treningHoyre").onclick = gloseTreningGloseGalt;
+	document.getElementById("treningUnder").onclick = gloseTreningKontroll;
+	
+
+}
+
+function gloseTreningVetIkke() {
+	
+	glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]=glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]-5;
+	if (glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]<0){
+		glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger] = 0;
+	}
+	localStorage.lat2GlosetreningLagret=JSON.stringify(glosetreningMidlertidig);
+	ordTilRep.push(utvalg[tilfeldigTallListe[progresjon]]);
+	
+	//Sett opp tekst
+	document.getElementById("treningScore").innerHTML = glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger];
+	document.getElementById("treningGlose").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][1];
+	document.getElementById("treningVenstre").innerHTML = "---";
+	document.getElementById("treningHoyre").innerHTML = "Fortsett";
+	document.getElementById("treningUnder").innerHTML = "---";
+	document.getElementById("treningIgjen").innerHTML = utvalg.length-progresjon-1;
+
+	//Gi knappene sine funksjoner
+	document.getElementById("treningVenstre").onclick = 0;
+	document.getElementById("treningVenstre").disabled = true;
+	document.getElementById("treningHoyre").onclick = gloseTreningGlose;
+	document.getElementById("treningUnder").onclick = 0;
+	document.getElementById("treningUnder").disabled = true;
+	
+	//Komme seg videre
+	progresjon += 1;
+	
+}
+
+function gloseTreningKontroll() {
+	
+	glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]=glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]+100;
+	if (glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]>100){
+		glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger] = 100;
+	}
+	localStorage.lat2GlosetreningLagret=JSON.stringify(glosetreningMidlertidig);
+	
+	progresjon += 1;
+	
+	if (progresjon == utvalg.length) {
+		gloseTreningSlutt();
+	} else {
+	
+		//Sett opp tekst
+		document.getElementById("treningFrekvens").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][3];
+		document.getElementById("treningScore").innerHTML = glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger];
+		document.getElementById("treningGlose").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][0];
+		document.getElementById("treningVenstre").innerHTML = "Klar";
+		document.getElementById("treningHoyre").innerHTML = "Vet ikke";
+		document.getElementById("treningUnder").innerHTML = "Full kontroll";
+		document.getElementById("treningIgjen").innerHTML = utvalg.length-progresjon-1;
+
+		//Gi knappene sine funksjoner
+		document.getElementById("treningVenstre").onclick = gloseTreningKlar;
+		document.getElementById("treningHoyre").onclick = gloseTreningVetIkke;
+		document.getElementById("treningUnder").onclick = gloseTreningKontroll;
+		
+	}
+}
+
+function gloseTreningGloseGalt() {
+	
+	glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]=glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]-15;
+	if (glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]<0){
+		glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger] = 0;
+	}
+	localStorage.lat2GlosetreningLagret=JSON.stringify(glosetreningMidlertidig);
+	ordTilRep.push(utvalg[tilfeldigTallListe[progresjon]]);
+	
+	progresjon += 1;
+	
+	if (progresjon == utvalg.length) {
+		gloseTreningSlutt();
+	} else {
+	
+		//Sett opp tekst
+		document.getElementById("treningFrekvens").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][3];
+		document.getElementById("treningScore").innerHTML = glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger];
+		document.getElementById("treningGlose").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][0];
+		document.getElementById("treningVenstre").innerHTML = "Klar";
+		document.getElementById("treningHoyre").innerHTML = "Vet ikke";
+		document.getElementById("treningUnder").innerHTML = "Full kontroll";
+		document.getElementById("treningIgjen").innerHTML = utvalg.length-progresjon-1;
+	
+		//Gi knappene sine funksjoner
+		document.getElementById("treningVenstre").onclick = gloseTreningKlar;
+		document.getElementById("treningHoyre").onclick = gloseTreningVetIkke;
+		document.getElementById("treningUnder").onclick = gloseTreningKontroll;
+		
+	}
+}
+
+function gloseTreningGloseRiktig() {
+	
+	glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]=glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]+10;
+	if (glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger]>100){
+		glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger] = 100;
+	}
+	localStorage.lat2GlosetreningLagret=JSON.stringify(glosetreningMidlertidig);
+	
+	progresjon += 1;
+
+	if (progresjon == utvalg.length) {
+		gloseTreningSlutt();
+	} else {
+	
+		//Sett opp tekst
+		document.getElementById("treningFrekvens").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][3];
+		document.getElementById("treningScore").innerHTML = glosetreningMidlertidig[utvalg[tilfeldigTallListe[progresjon]]+innstillinger];
+		document.getElementById("treningGlose").innerHTML = ordliste[utvalg[tilfeldigTallListe[progresjon]]][0];
+		document.getElementById("treningVenstre").innerHTML = "Klar";
+		document.getElementById("treningHoyre").innerHTML = "Vet ikke";
+		document.getElementById("treningUnder").innerHTML = "Full kontroll";
+		document.getElementById("treningIgjen").innerHTML = utvalg.length-progresjon-1;
+	
+		//Gi knappene sine funksjoner
+		document.getElementById("treningVenstre").onclick = gloseTreningKlar;
+		document.getElementById("treningHoyre").onclick = gloseTreningVetIkke;
+		document.getElementById("treningUnder").onclick = gloseTreningKontroll;
+		
+	}
+}
+
+function gloseTreningSlutt () {
+	progresjon = 0;
+	utvalg = [];
+	if (ordTilRep.length != 0){
+		if (confirm('Vil du se gjennom de vanskelige ordene igjen?')) {
+    		gloseTreningRepGlose();
+		} else {
+			ordTilRep = [];
+    		hjem();
+		}
+	} else {
+		hjem();
+	}
+}
+
+function gloseTreningRepGlose(){
+	
+	if (progresjon == ordTilRep.length) {
+		hjem();
+	} else {
+		//Sett opp tekst
+		document.getElementById("treningFrekvens").innerHTML = ordliste[ordTilRep[progresjon]][3];
+		document.getElementById("treningScore").innerHTML = glosetreningMidlertidig[ordTilRep[progresjon]+innstillinger];
+		document.getElementById("treningGlose").innerHTML = ordliste[ordTilRep[progresjon]][0];
+		document.getElementById("treningVenstre").innerHTML = "---";
+		document.getElementById("treningHoyre").innerHTML = "Fortsett";
+		document.getElementById("treningUnder").innerHTML = "---";
+		document.getElementById("treningIgjen").innerHTML = ordTilRep.length-progresjon-1;
+
+		//Gi knappene sine funksjoner
+		document.getElementById("treningVenstre").onclick = 0;
+		document.getElementById("treningVenstre").disabled = true;
+		document.getElementById("treningHoyre").onclick = gloseTreningRepSvar;
+		document.getElementById("treningUnder").onclick = 0;
+		document.getElementById("treningUnder").disabled = true;
+	}
+}
+
+function gloseTreningRepSvar(){
+
+	//Sett opp tekst
+	document.getElementById("treningGlose").innerHTML = ordliste[ordTilRep[progresjon]][1];
+	
+	//Gi knappene sine funksjoner
+	document.getElementById("treningHoyre").onclick = gloseTreningRepGlose;
+	
+	//Kommer seg videre
+	progresjon += 1;
+}
+
+function gloseTreningInnstillinger(){
+	document.getElementById("innhold").innerHTML = "<p>Glosetrening er utviklet med tanke p&aring; &aring; l&aelig;re ordene p&aring; samme m&aring;te som man ville gjort med glosekort. N&aring;r du &aring;pner Glosetrening setter programmet sammen en samling p&aring; 30 ord som du skal &oslash;ve p&aring;. 10 av disse vil (om mulig) v&aelig;re tilfeldig valgte ord som du allerede kan. De andre ordene velges systematisk slik at du alltid &oslash;ver p&aring; de mest brukte ordene som du ikke har l&aelig;rt enda.</p>\
+	<p>For &aring; ha kontroll p&aring; fremgangen har hvert ord f&aring;tt sin egen poengsum. I utgangspunktet har hvert ord 50 poeng. Hvis du trykker p&aring; &quot;Vet ikke&quot; mister ordet 5 poeng. Hver gang du kjenner igjen ordet f&aring;r det 10 poeng. N&aring;r du tror du kjenner igjen ordet, men tar feil, mister det 15 poeng. N&aring;r et ord har 100 poeng regner porgrammet med at du kan det. (Men det kan n&aring;r som helst dukke opp som en repetisjon.) For at du skal slippe &aring; g&aring; mange ganger gjennom ord du kan godt fra f&oslash;r er det lagt inn en snarvei: &quot;Full-kontroll&quot;-knappen gir et ord 100 poeng umiddelbart.</p>\
+	<p>Innstillinger:<br>\
+	<select id=\"antallordialt\">\
+	<option value=20>20</option>\
+	<option value=30>30</option>\
+	<option value=40>40</option>\
+	</select> ord i alt<br>\
+	<select id=\"antallorddukan\">\
+	<option value=0>0</option>\
+	<option value=5>5</option>\
+	<option value=10>10</option>\
+	<option value=15>15</option>\
+	</select> repetisjonsord<br><br>\
+	<button type=\"button\" onclick=\"lagreinnstillinger()\">Lagre</button>\
+	<button type=\"button\" onclick=\"gloseTreningTilbake()\">Tilbake</button><br><br>\
+	<i><span id=\"bekreftelse\"></span></i></p>";
+	velgOptionMedVerdi (document.getElementById("antallordialt"),glosetreningMidlertidig[0]);
+	velgOptionMedVerdi (document.getElementById("antallorddukan"),glosetreningMidlertidig[1]);
+}
+
+function lagreinnstillinger(){
+	glosetreningMidlertidig[0] = document.getElementById("antallordialt").value;
+	glosetreningMidlertidig[1] = document.getElementById("antallorddukan").value;
+	localStorage.lat2GlosetreningLagret=JSON.stringify(glosetreningMidlertidig);
+	document.getElementById("bekreftelse").innerHTML = "Innstillingene ble lagret. De vil tre i kraft neste gang du starter opp Glosetrening.";
+}
+
+function gloseTreningTilbake(){
+	//sett opp skallet
+	document.getElementById("innhold").innerHTML = "<p>\
+	Frekvens: <span id=\"treningFrekvens\">0</span>\
+	<span class=\"hoyre\">Score: <span id=\"treningScore\">0</span></span></p>\
+	<div id=\"treningFlashcard\"><div id=\"treningGlose\">Glose</div></div>\
+	<div id=\"treningKnapper\"><br>\
+	<button type=\"button\" id=\"treningVenstre\">Klar</button>\
+	<button type=\"button\" id=\"treningHoyre\">Vet ikke</button><br><br>\
+	<button type=\"button\" id=\"treningUnder\">Full kontroll!</button></div>\
+	<p>Ord igjen: <span id=\"treningIgjen\">0</span>\
+	<button type=\"button\" id=\"treningInnstillinger\">Innstillinger/Hjelp</button>"
+	
+	document.getElementById("treningInnstillinger").onclick = gloseTreningInnstillinger;
+	
+	gloseTreningGlose();
+}
+
+// Glosetid
+function gloseTidSetup() {
+	document.getElementById("overskrift").innerHTML = "<h2>Tid</h2>";
+	document.getElementById("innhold").innerHTML = "";
+	// Check browser support
+	if (typeof(Storage) !== "undefined") {
+		// Hvis funksjonen ikke er brukt foer, setter vi innstillingene til normal
+		if (!(localStorage.lat2GloseTidLagret)){
+			localStorage.lat2GloseTidLagret=JSON.stringify([-1,[],[],[],[],[],[],[],[],[],[],[]]);
+		}
+		
+		//sett opp skallet
+		document.getElementById("innhold").innerHTML = "<p>\
+		Leksjon: <span id=\"treningFrekvens\">0</span>\
+		<span class=\"hoyre\">Bunke: <span id=\"treningScore\">0</span></span></p>\
+		<div id=\"treningFlashcard\"><div id=\"treningGlose\">Glose</div></div>\
+		<div id=\"tidKnapper\"><br>\
+		<div class=\"box\">\
+		<button type=\"button\" id=\"treningVenstre\">---</button>\
+		</div>\
+		<div class=\"box\">\
+		<button type=\"button\" id=\"treningMidt\">Klar</button>\
+		</div>\
+		<div class=\"box\">\
+		<button type=\"button\" id=\"treningHoyre\">---</button><br><br></div>\
+		</div>\
+		<table width=330px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<col width=30px>\
+		<tr>\
+		<td><div id=\"stat1\" class=\"stat\"></div></td>\
+		<td><div id=\"stat2\" class=\"stat\"></div></td>\
+		<td><div id=\"stat3\" class=\"stat\"></div></td>\
+		<td><div id=\"stat4\" class=\"stat\"></div></td>\
+		<td><div id=\"stat5\" class=\"stat\"></div></td>\
+		<td><div id=\"stat6\" class=\"stat\"></div></td>\
+		<td><div id=\"stat7\" class=\"stat\"></div></td>\
+		<td><div id=\"stat8\" class=\"stat\"></div></td>\
+		<td><div id=\"stat9\" class=\"stat\"></div></td>\
+		<td><div id=\"stat10\" class=\"stat\"></div></td>\
+		<td><div id=\"stat11\" class=\"stat\"></div></td>\
+		</tr>\
+		<tr>\
+		<td>1</td>\
+		<td>2</td>\
+		<td>3</td>\
+		<td>4</td>\
+		<td>5</td>\
+		<td>6</td>\
+		<td>7</td>\
+		<td>8</td>\
+		<td>9</td>\
+		<td>10</td>\
+		<td>11</td>\
+		</tr>\
+		</table>\
+		<div id=\"advarsel\"></div>"
+		
+		//Sett opp foerste oppgave
+		gloseTidNeste();
+		gloseTidVisGlose();
+		gloseTidGrafikk();
+		
+		//Aktiver snarveier
+		document.addEventListener('keypress', visGloseSnarveier);
+
+	} else {
+    	document.getElementById("innhold").innerHTML = "Sorry, browseren din st&oslash;tter ikke web storage. Og da blir denne funksjonen litt ubrukelig...";
+	}
+}
+
+function visGloseSnarveier(e) {
+	var x = e.charCode || e.keyCode;
+	if (x == 66 || x == 98) {
+        document.getElementById("treningVenstre").click();
+    } else if (x == 78 || x == 110) {
+        document.getElementById("treningMidt").click();
+    } else if (x == 77 || x == 109) {
+        document.getElementById("treningHoyre").click();
+    }
+}
+
+function gloseTidGrafikk() {
+	var liste = ["stat1", "stat2", "stat3", "stat4", "stat5", "stat6", "stat7", "stat8", "stat9", "stat10", "stat11"]
+	var gloseTidMidlertidig = JSON.parse(localStorage.lat2GloseTidLagret);
+	for (var i = 1; i<12; i++) {
+		document.getElementById(liste[i-1]).style.height = Math.ceil(gloseTidMidlertidig[i].length/2)+"px";
+	}
+}
+
+function gloseTidNeste() {
+
+	//importer lagrede bunker
+	var gloseTidMidlertidig = JSON.parse(localStorage.lat2GloseTidLagret);
+	
+	//Hvis det er gitt 12 rette svar (- antall flytt nedover) ta et nytt kort
+	if (gloseTidTelling > 11) {
+		if (gloseTidMidlertidig[0] < ordlisteLengde-2) { //Men kun dersom det faktisk er flere kort
+			gloseTidTelling = 0;
+			gloseTidAktivGlose[0] = 0;
+			gloseTidAktivGlose[1] = gloseTidMidlertidig[0] + 1;
+			return
+		}
+	}
+	
+	//se etter klare ord - i neste bunke
+	//if (gloseTidTelling < 11) {
+	//	for (var i = gloseTidAktivGlose[0]+1; i<12; i++){
+	//		if (gloseTidMidlertidig[i].length > 0) {
+	//			var dagensDato = new Date().getTime();
+	//			if (dagensDato > gloseTidMidlertidig[i][0][0]) {
+	//				gloseTidAktivGlose[0] = i;
+	//				gloseTidAktivGlose[1] = gloseTidMidlertidig[i][0][1];
+	//				return
+	//			}
+	//		}
+	//	}
+	//}
+	
+	//se etter klare ord - i alle bunker
+	var dagensDato = new Date().getTime();
+	for (var i = 1; i<12; i++){
+		if (gloseTidMidlertidig[i].length > 0) {
+			if (dagensDato > gloseTidMidlertidig[i][0][0]) {
+				gloseTidAktivGlose[0] = i;
+				gloseTidAktivGlose[1] = gloseTidMidlertidig[i][0][1];
+				
+				//Ekstra kode for Haakon
+                    if (gloseTidMidlertidig[i][0][1] > ordlisteLengde-3){
+                        gloseTidMidlertidig[gloseTidAktivGlose[0]].shift();
+                        //lagre endringer
+                        localStorage.lat2GloseTidLagret=JSON.stringify(gloseTidMidlertidig);
+                        gloseTidNeste()
+                    }
+				return
+			}
+		}
+	}
+	
+	if (gloseTidMidlertidig[0] > ordlisteLengde-3) {
+		document.getElementById("advarsel").innerHTML = "OBS! Du er gjennom kortene, og dermed vil noen kort repeteres tidligere enn normalt.";
+		var x = 1 //Rekordnotering
+		var y = 0 //Husker i, dersom rekord
+		var z = 0 //Utregnes og sammenlignes med rekord
+		for (var i = 1; i<12; i++){
+			if (gloseTidMidlertidig[i].length > 0) {
+				z = (gloseTidMidlertidig[i][0][0] - dagensDato)/tidsintervaller[i-1]
+				if (z < x) {
+					y = i
+				}
+			}
+		}
+		gloseTidAktivGlose[0] = y;
+		gloseTidAktivGlose[1] = gloseTidMidlertidig[y][0][1];
+	} else {
+		//Hvis det ikke er noen kort som venter, men det fortsatt finnes ubrukte kort, ta et nytt kort
+		gloseTidTelling = 0;
+		gloseTidAktivGlose[0] = 0;
+		gloseTidAktivGlose[1] = gloseTidMidlertidig[0] + 1;
+	}
+	
+}
+
+function gloseTidRiktig() {
+
+	//Gi ett poeng
+	gloseTidTelling += 1;
+	
+	//importer lagrede bunker
+	var gloseTidMidlertidig = JSON.parse(localStorage.lat2GloseTidLagret);
+	if (gloseTidAktivGlose[0] == 0) {
+		gloseTidMidlertidig[0] = gloseTidMidlertidig[0] + 1;
+		gloseTidMidlertidig[1].push([new Date().getTime() + tidsintervaller[0], gloseTidAktivGlose[1]]);
+	} else if (gloseTidAktivGlose[0] == 11) {
+		gloseTidMidlertidig[11].shift();
+		gloseTidMidlertidig[11].push([new Date().getTime() + tidsintervaller[10], gloseTidAktivGlose[1]]);
+	} else {
+		gloseTidMidlertidig[gloseTidAktivGlose[0]].shift();
+		gloseTidMidlertidig[gloseTidAktivGlose[0]+1].push([new Date().getTime() + tidsintervaller[gloseTidAktivGlose[0]], gloseTidAktivGlose[1]]);
+	}
+	//lagre endringer
+	localStorage.lat2GloseTidLagret=JSON.stringify(gloseTidMidlertidig);
+	//sett opp neste oppgave
+	gloseTidNeste();
+	gloseTidVisGlose();
+	gloseTidGrafikk();
+}
+
+function gloseTidLett() {
+
+	//Gi fire poeng
+	gloseTidTelling += 4;
+	
+	//importer lagrede bunker
+	var gloseTidMidlertidig = JSON.parse(localStorage.lat2GloseTidLagret);
+	if (gloseTidAktivGlose[0] == 0) {
+		gloseTidMidlertidig[0] = gloseTidMidlertidig[0] + 1;
+		gloseTidMidlertidig[4].push([new Date().getTime() + tidsintervaller[3], gloseTidAktivGlose[1]]);
+	} else if (gloseTidAktivGlose[0] > 7) {
+		gloseTidMidlertidig[gloseTidAktivGlose[0]].shift();
+		gloseTidMidlertidig[11].push([new Date().getTime() + tidsintervaller[10], gloseTidAktivGlose[1]]);
+	} else {
+		gloseTidMidlertidig[gloseTidAktivGlose[0]].shift();
+		gloseTidMidlertidig[gloseTidAktivGlose[0]+4].push([new Date().getTime() + tidsintervaller[gloseTidAktivGlose[0]+3], gloseTidAktivGlose[1]]);
+	}
+	//lagre endringer
+	localStorage.lat2GloseTidLagret=JSON.stringify(gloseTidMidlertidig);
+	//sett opp neste oppgave
+	gloseTidNeste();
+	gloseTidVisGlose();
+	gloseTidGrafikk();
+}
+
+function gloseTidGalt() {
+
+	//Fjern saa mange poeng som det mistes
+	gloseTidTelling -= (gloseTidAktivGlose[0]-1);
+	
+	//importer lagrede bunker
+	var gloseTidMidlertidig = JSON.parse(localStorage.lat2GloseTidLagret);
+	if (gloseTidAktivGlose[0] == 0) {
+		gloseTidMidlertidig[0] = gloseTidMidlertidig[0] + 1;
+		gloseTidMidlertidig[1].push([new Date().getTime() + tidsintervaller[0], gloseTidAktivGlose[1]]);
+	} else {
+		gloseTidMidlertidig[gloseTidAktivGlose[0]].shift();
+		gloseTidMidlertidig[1].push([new Date().getTime() + tidsintervaller[0], gloseTidAktivGlose[1]]);
+	}
+	//lagre endringer
+	localStorage.lat2GloseTidLagret=JSON.stringify(gloseTidMidlertidig);
+	//sett opp neste oppgave
+	gloseTidNeste();
+	gloseTidVisGlose();
+	gloseTidGrafikk();
+}
+
+function gloseTidVisGlose() {
+	//Sett opp tekst
+	document.getElementById("treningFrekvens").innerHTML = ordliste[gloseTidAktivGlose[1]][3]; // gloseTidTelling;
+	document.getElementById("treningScore").innerHTML = gloseTidAktivGlose[0];
+	document.getElementById("treningGlose").innerHTML = ordliste[gloseTidAktivGlose[1]][0];
+	document.getElementById("treningVenstre").innerHTML = "---";
+	document.getElementById("treningMidt").innerHTML = "Klar (n)";
+	document.getElementById("treningHoyre").innerHTML = "---";
+	
+	//Gi knappene sine funksjoner
+	document.getElementById("treningVenstre").disabled = true;
+	document.getElementById("treningMidt").onclick = gloseTidVisFasit;
+	document.getElementById("treningHoyre").disabled = true;
+	
+}
+
+function gloseTidVisFasit() {
+	//Sett opp tekst
+	document.getElementById("treningGlose").innerHTML = ordliste[gloseTidAktivGlose[1]][1];
+	document.getElementById("treningVenstre").innerHTML = "For lett (b)";
+	document.getElementById("treningMidt").innerHTML = "Riktig (n)";
+	document.getElementById("treningHoyre").innerHTML = "Galt (m)";
+	
+	//Gi knappene sine funksjoner
+	document.getElementById("treningVenstre").disabled = false;
+	document.getElementById("treningVenstre").onclick = gloseTidLett;
+	document.getElementById("treningMidt").onclick = gloseTidRiktig;
+	document.getElementById("treningHoyre").disabled = false;
+	document.getElementById("treningHoyre").onclick = gloseTidGalt;
+}
+	
+
+
+    // Store:		localStorage.setItem("", "Smith");
+    // Retrieve:	document.getElementById("result").innerHTML = localStorage.getItem("lastname");
+    // Ut:			JSON.parse(localStorage.lat2GlosetreningLagret)
+    // Inn:			localStorage.lat2GlosetreningLagret=JSON.stringify(glosetreningMidlertidig);
+
+</script>
+</head>
+<body>
+<div class="helesiden">
+
+<div class="topp">
+<br>
+<div class="navigasjon">
+
+<a class="knapp" href="javascript:;" onclick="glosequizSetup()">Quiz</a>
+<a class="knapp" href="javascript:;" onclick="glosetreningSetup()">Poeng</a>
+<a class="knapp" href="javascript:;" onclick="gloseTidSetup()">Tid</a>
+
+</div>
+<br>
+</div>
+
+<div id="overskrift">
+<h2>Velkommen!</h2>
+</div>
+
+<div id="innhold">
+<p>Vennligst velg en metode for glosepugging.</p>
+<p><b>Kort om de forskjellige funksjonene:</b><br>
+<i>Quiz</i> genererer en multiple-choice-test av de glosene du velger. Du kan enten velge alle gloser for en leksjon med ett klikk, eller sette sammen ditt eget utvalg av ord basert p&aring; leksjoner og ordklasser og velge hvor mange oppgaver og alternativer som skal generereres.</p>
+<p>De to andre funksjonene er laget med utgangspunkt i hvordan man kan bruke flashcards. Det gis ingen alternativer, og du vurderer selv om du har greid oppgaven eller ikke. Programmet holder styr p&aring; kortene for deg, og s&oslash;rger for en riktig progresjon. Begge disse funksjonene krever at browseren din st&oslash;tter s&aring;kalt Web storage, som kan huske hvor langt du har kommet.</p>
+<p><i>Poeng</i> bruker et poengsystem, hvor hvert enkelt ord har en poengsum som starter p&aring; 50. N&aring;r du svarer feil mister du 15 poeng, n&aring;r du svarer rett f&aring;r du 10 poeng, og hvis du oppgir at du ikke vet svaret mister du 5 poeng. N&aring;r et ord har n&aring;dd 100 poeng tas det ut av &oslash;vingene, men det kan n&aring;r som helst dukke opp igjen som en tilfeldig repetisjon. N&aring;r du starter denne funksjonen settes det sammen en &oslash;kt best&aring;ende av 30 ord. Denne funksjonen egner seg godt til &aring; brukes over lengre tid, en gang eller to om dagen.</p>
+<p><i>Tid</i> egner seg bedre til intensiv glosepugging. Du kan se for deg at glosekortene ligger i opp til 11 forskjellige bunker. I den f&oslash;rste bunken m&aring; de ligge i minst fem sekunder f&oslash;r du ser dem igjen, i den neste i 25 sekunder, i den neste i to minutter, og s&aring; videre, helt opp til den siste bunken hvor de ikke repeteres f&oslash;r om to &aring;r. Hver gang man svarer riktig flyttes kortet videre til neste bunke, men dersom man svarer feil g&aring;r kortet tilbake til f&oslash;rste bunke. N&aring;r ingen kort er klare til repetisjon, tar man et nytt kort fra boksen, ser p&aring; det, og legger det i f&oslash;rste bunke. Denne metoden sikrer at glosene m&aring; huskes en viss tid f&oslash;r programmet regner med at du kan dem. Dersom man bruker funksjonen <i>Poeng</i> veldig hyppig, vil en glose kunne oppn&aring; 100 poeng p&aring; noen timer, uten at man husker den neste dag. Hvis man derimot bruker <i>Tid</i> mye, vil tidsintervallene v&aelig;re faste, og man vil heller jobbe med flere ord samtidig.</p>
+</div>
+<br><br>
+<div id="bunn">
+<i>Olav Brenns&aelig;ter, 2019</i><span class="hoyre">JS-Latin 1.0</span>
+</div>
+
+</div>
+</body>
+
+</html>
